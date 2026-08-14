@@ -1,0 +1,71 @@
+"""
+Pytest suite for Milestone M3 of Prawko B MVP.
+
+Acceptance criteria for M3:
+- Nauka view & static files served cleanly.
+- GET /api/questions filtering supports scope & axis.
+- Media route provides fallback handling.
+"""
+
+import sys
+from pathlib import Path
+import pytest
+from fastapi.testclient import TestClient
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from app.main import app
+
+client = TestClient(app)
+
+
+def test_static_and_root_routes():
+    res = client.get("/")
+    assert res.status_code == 200
+    assert "Prawko B" in res.text
+
+    css_res = client.get("/static/css/style.css")
+    assert css_res.status_code == 200
+
+    js_res = client.get("/static/js/app.js")
+    assert js_res.status_code == 200
+
+
+def test_questions_api_filtering():
+    # Filter basic scope
+    res = client.get("/api/questions?category=B&scope=PODSTAWOWY")
+    assert res.status_code == 200
+    questions = res.json()
+    assert isinstance(questions, list)
+    assert len(questions) > 0
+    for q in questions:
+        assert q["scope"] == "PODSTAWOWY"
+
+    # Filter specialist scope
+    res_spec = client.get("/api/questions?category=B&scope=SPECJALISTYCZNY")
+    assert res_spec.status_code == 200
+    spec_qs = res_spec.json()
+    for q in spec_qs:
+        assert q["scope"] == "SPECJALISTYCZNY"
+
+
+def test_media_fallback_route():
+    # Non-existent media should return 404 cleanly
+    res = client.get("/media/non_existent_file.mp4")
+    assert res.status_code == 404
+
+
+def test_media_wmv_fallback():
+    media_dir = PROJECT_ROOT / "media"
+    dummy_mp4 = media_dir / "test_sample_video.mp4"
+    try:
+        dummy_mp4.write_bytes(b"dummy mp4 video bytes")
+        # Requesting .wmv should return the .mp4 file
+        res = client.get("/media/test_sample_video.wmv")
+        assert res.status_code == 200
+        assert res.content == b"dummy mp4 video bytes"
+    finally:
+        if dummy_mp4.exists():
+            dummy_mp4.unlink()
+

@@ -1,0 +1,191 @@
+{
+  "pierwsza_pomoc_rko": {
+    "statute": "Art. 44 ust. 2 UPRD oraz Wytyczne Europejskiej Rady Resuscytacji (ERC).",
+    "short_citation": "Art. 44 ust. 2 UPRD, Wytyczne ERC",
+    "rule": "W razie wypadku z poszkodowanymi należy niezwłocznie wezwać służby ratunkowe (112/999) i udzielić pierwszej pomocy. U osoby dorosłej bez oddechu wykonuje się RKO w sekwencji 30 uciśnięć klatki piersiowej do 2 wdechów.",
+    "keywords": ["reanimacj", "rko", "oddech", "poszkodowan", "krwaw", "opatrun", "apteczk", "112", "pozycji bocznej", "uciskania klatki", "wypadk", "rann"],
+    "is_statutory": true
+  },
+  "alkohol_i_uprawnienia": {
+    "statute": "Ustawa z dnia 5 stycznia 2011 r. o kierujących pojazdami oraz Kodeks Wykroczeń i Kodeks Karny.",
+    "short_citation": "Ustawa o kierujących pojazdami, Kodeks Wykroczeń",
+    "rule": "Stan po użyciu alkoholu zachodzi przy stężeniu 0,2–0,5‰ we krwi (0,1–0,25 mg/l w wydychanym powietrzu). Stan nietrzeźwości to stężenie powyżej 0,5‰ (powyżej 0,25 mg/l w wydychanym powietrzu).",
+    "keywords": ["alkohol", "promil", "nietrzeźw", "punkty karne", "prawo jazdy", "starost", "zatrzymanie prawa jazdy", "badanie lekarsk", "okres próbn"],
+    "is_statutory": true
+  },
+  "dokumenty_rejestracja": {
+    "statute": "Art. 71 i Art. 81 Ustawy Prawo o ruchu drogowym.",
+    "short_citation": "Art. 71, Art. 81 UPRD",
+    "rule": "Pojazd dopuszcza się do ruchu po zarejestrowaniu i zaopatrzeniu w zalegalizowane tablice rejestracyjne oraz aktualne badanie techniczne.",
+    "keywords": ["dowód rejestracyjn", "badanie techniczn", "okresowe badanie", "przegląd techniczn", "tablice rejestracyjn", "tablic rejestracyjn", "dopuszczenie do ruchu"],
+    "is_statutory": true
+  },
+  "sygnaly_policjanta": {
+    "statute": "Art. 5 ust. 3 Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 5 ust. 3 UPRD",
+    "rule": "Polecenia i sygnały dawane przez osobę kierującą ruchem (np. policjanta) mają bezwzględne pierwszeństwo przed sygnałami świetlnymi i znakami drogowymi.",
+    "keywords": ["policjant", "kierującym ruchem", "postawa policjanta", "ręka podniesiona", "kierujący ruchem", "kierującemu ruchem"],
+    "is_statutory": true
+  },
+  "sygnaly_swietlne": {
+    "statute": "§ 95–§ 98 Rozporządzenia w sprawie znaków i sygnałów drogowych oraz Art. 5 UPRD.",
+    "short_citation": "§ 95–§ 98 Rozp. ws. znaków i sygnałów, Art. 5 UPRD",
+    "rule": "Sygnały świetlne mają pierwszeństwo przed znakami drogowymi regulującymi pierwszeństwo przejazdu. Sygnał czerwony oznacza bezwzględny zakaz wjazdu za sygnalizator, a zielona strzałka zezwala na warunkowy skręt po uprzednim zatrzymaniu.",
+    "keywords": ["sygnalizator", "światło żółte", "światło czerwone", "zielona strzałka", "s-1", "s-2", "s-3", "sygnał świetlny", "sygnały świetlne"],
+    "is_statutory": true
+  },
+  "znaki_ostrzegawcze": {
+    "statute": "§ 3–§ 14 Rozporządzenia Ministrów Infrastruktury oraz Spraw Wewnętrznych i Administracji w sprawie znaków i sygnałów drogowych.",
+    "short_citation": "§ 3–§ 14 Rozp. ws. znaków i sygnałów",
+    "rule": "Znaki ostrzegawcze uprzedzają o miejscach na drodze, w których występuje lub może występować niebezpieczeństwo, zobowiązując kierującego do zachowania szczególnej ostrożności i dostosowania prędkości.",
+    "keywords": ["znak ostrzegawcz", "znaku ostrzegawcz", "ostrzega", "a-", "nierówna droga", "zwężenie jezdni", "niebezpieczny zakręt", "stromy zjazd", "tabliczka pod znakiem"],
+    "is_statutory": true
+  },
+  "znaki_zakazu": {
+    "statute": "§ 15–§ 34 Rozporządzenia w sprawie znaków i sygnałów drogowych.",
+    "short_citation": "§ 15–§ 34 Rozp. ws. znaków i sygnałów",
+    "rule": "Znaki zakazu wyrażają ustalenia organizacji ruchu ograniczające poruszanie się pojazdów lub zabraniające określonych manewrów. Zakaz obowiązuje od miejsca ustawienia znaku do najbliższego skrzyżowania lub znaku odwołującego.",
+    "keywords": ["znak zakazu", "znaku zakazu", "znaki zakazu", "b-", "zabrania się", "zakazuje", "zakaz wjazdu", "zakaz ruchu", "zakaz wyprzedzania", "zakaz zatrzymywania"],
+    "is_statutory": true
+  },
+  "znaki_nakazu": {
+    "statute": "§ 35–§ 42 Rozporządzenia w sprawie znaków i sygnałów drogowych.",
+    "short_citation": "§ 35–§ 42 Rozp. ws. znaków i sygnałów",
+    "rule": "Znaki nakazu wskazują wymagany sposób jazdy oraz obowiązki nałożone na kierującego na danym odcinku drogi.",
+    "keywords": ["znak nakazu", "znaku nakazu", "znaki nakazu", "c-", "nakazuje", "nakaz jazdy"],
+    "is_statutory": true
+  },
+  "znaki_informacyjne": {
+    "statute": "§ 43–§ 68 Rozporządzenia w sprawie znaków i sygnałów drogowych.",
+    "short_citation": "§ 43–§ 68 Rozp. ws. znaków i sygnałów",
+    "rule": "Znaki informacyjne informują o rodzaju drogi, sposobie korzystania z niej oraz obiektach znajdujących się przy drodze lub w jej pobliżu.",
+    "keywords": ["znak informacyjn", "znaku informacyjn", "znaki informacyjne", "d-", "autostrada", "droga ekspresowa", "strefa płatnego", "droga jednokierunkowa", "początek pasa"],
+    "is_statutory": true
+  },
+  "pieszy_przejscie": {
+    "statute": "Art. 26 ust. 1 Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 26 ust. 1 UPRD",
+    "rule": "Kierujący pojazdem zbliżając się do przejścia dla pieszych jest obowiązany zachować szczególną ostrożność, zmniejszyć prędkość i ustąpić pierwszeństwa pieszemu znajdującemu się na przejściu oraz wchodzącemu na nie.",
+    "keywords": ["pieszy", "pieszemu", "pieszych", "przejściu dla pieszych", "przejście dla pieszych", "przejścia dla pieszych", "chodnik dla pieszych"],
+    "is_statutory": true
+  },
+  "rowerzysta": {
+    "statute": "Art. 27 Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 27 UPRD",
+    "rule": "Kierujący pojazdem zbliżający się do przejazdu dla rowerzystów jest obowiązany zachować szczególną ostrożność i ustąpić pierwszeństwa kierującemu rowerem znajdującemu się na przejeździe.",
+    "keywords": ["rower", "rowerzyst", "przejazd dla rowerzystów", "rowerem", "hulajnog"],
+    "is_statutory": true
+  },
+  "pojazd_uprzywilejowany": {
+    "statute": "Art. 9 i Art. 53 Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 9 i Art. 53 UPRD",
+    "rule": "Uczestnik ruchu jest obowiązany ułatwić przejazd pojazdowi uprzywilejowanemu (wysyłającemu sygnały błyskowe niebieskie i sygnał dźwiękowy) przez natychmiastowe usunięcie się z drogi (utworzenie korytarza życia).",
+    "keywords": ["uprzywilejowan", "korytarz życia", "korytarza życia", "syren", "sygnały błyskowe", "karetk", "straż pożarn", "policji na sygnale"],
+    "is_statutory": true
+  },
+  "rondo": {
+    "statute": "Art. 25 ust. 1 UPRD w zw. ze znakami C-12 oraz A-7 (Rozporządzenie ws. znaków i sygnałów drogowych).",
+    "short_citation": "Art. 25 ust. 1 UPRD, znaki C-12 i A-7",
+    "rule": "Ruch okrężny (rondo) jest regulowany przez Art. 25 PoRD w połączeniu ze znakami C-12 i A-7. Kierujący wjeżdżający na skrzyżowanie ze znakiem A-7 ustępuje pierwszeństwa pojazdom znajdującym się już na rondzie.",
+    "keywords": ["rond", "ruchu okrężn", "c-12", "skrzyżowanie o ruchu okrężnym"],
+    "is_statutory": true
+  },
+  "wlaczanie_sie_do_ruchu": {
+    "statute": "Art. 17 Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 17 UPRD",
+    "rule": "Kierujący włączający się do ruchu (np. wyjeżdżając ze strefy zamieszkania, drogi wewnętrznej czy posesji) jest obowiązany zachować szczególną ostrożność i ustąpić pierwszeństwa wszystkim innym uczestnikom ruchu.",
+    "keywords": ["włączan", "strefy zamieszkania", "posesji", "drogi wewnętrznej", "pobocza", "włączający się"],
+    "is_statutory": true
+  },
+  "predkosc_limity": {
+    "statute": "Art. 19, Art. 20 i Art. 20a Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 19, Art. 20 UPRD",
+    "rule": "Dopuszczalna prędkość pojazdu samochodowego wynosi: 50 km/h w obszarze zabudowanym, 20 km/h w strefie zamieszkania, 140 km/h na autostradzie, 120 km/h na drodze ekspresowej dwujezdniowej oraz 100 km/h na drodze ekspresowej jednojezdniowej.",
+    "keywords": ["prędkość", "km/h", "ograniczenie prędkości", "dopuszczalna prędkość", "obszar zabudowany", "obszarze zabudowanym", "strefa zamieszkania", "strefie zamieszkania"],
+    "is_statutory": true
+  },
+  "odstep_bezpieczny": {
+    "statute": "Art. 19 ust. 1 i ust. 3 Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 19 ust. 3 UPRD",
+    "rule": "Kierujący jest obowiązany utrzymywać odstęp niezbędny do uniknięcia zderzenia w razie hamowania pojazdu poprzedzającego. Na autostradach i drogach ekspresowych odstęp ten w metrach wynosi co najmniej połowę aktualnej prędkości (km/h).",
+    "keywords": ["odstęp", "odległość od poprzedzającego", "odstępu", "bezpieczny odstęp"],
+    "is_statutory": true
+  },
+  "droga_zatrzymania": {
+    "statute": "Zasady fizyki ruchu drogowego (w nawiązaniu do Art. 19 ust. 1 UPRD).",
+    "short_citation": "Art. 19 ust. 1 UPRD, fizyka jazdy",
+    "rule": "Całkowita droga zatrzymania składa się z drogi przebytej w czasie reakcji kierowcy oraz właściwej drogi hamowania, która rośnie proporcjonalnie do kwadratu prędkości pojazdu.",
+    "keywords": ["droga zatrzymania", "droga hamowania", "czas reakcji", "siła odśrodkowa", "aquaplaning", "poślizg"],
+    "is_statutory": true
+  },
+  "wyprzedzanie": {
+    "statute": "Art. 24 Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 24 UPRD",
+    "rule": "Przed wyprzedzaniem kierujący musi upewnić się o dostatecznej widoczności i miejscu do bezpiecznego powrotu. Zabrania się wyprzedzania m.in. na przejściach dla pieszych i bezpośrednio przed nimi, przy dojeżdżaniu do wierzchołka wzniesienia oraz na skrzyżowaniach.",
+    "keywords": ["wyprzedz", "wyprzedzić", "wyprzedzanie", "wyprzedzania"],
+    "is_statutory": true
+  },
+  "zawracanie": {
+    "statute": "Art. 22 ust. 6 Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 22 ust. 6 UPRD",
+    "rule": "Zabrania się zawracania w tunelach, na mostach, wiaduktach, drogach jednokierunkowych, autostradach oraz drogach ekspresowych (poza wyznaczonymi miejscami).",
+    "keywords": ["zawrac", "zawrót", "zawrócić", "zawracanie", "tunel", "wiadukt", "most"],
+    "is_statutory": true
+  },
+  "zatrzymanie_postoj": {
+    "statute": "Art. 46, 47 i 49 Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 46, 47, 49 UPRD",
+    "rule": "Zabrania się zatrzymania pojazdu m.in. na przejazdach kolejowych i tramwajowych, na skrzyżowaniach i w odległości mniejszej niż 10 m od nich oraz na przejściach dla pieszych i 10 m przed nimi.",
+    "keywords": ["zatrzym", "postój", "postoj", "parkowan", "zakaz zatrzymywania", "zakaz postoju"],
+    "is_statutory": true
+  },
+  "zmiana_pasa_kierunku": {
+    "statute": "Art. 22 Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 22 UPRD",
+    "rule": "Kierujący może zmienić kierunek jazdy lub zajmowany pas ruchu tylko pod warunkiem zachowania szczególnej ostrożności i wczesnego, wyraźnego zasygnalizowania zamiaru kierunkowskazem.",
+    "keywords": ["kierunkowskaz", "zmiana pasa", "zmianie pasa", "zmienić pas", "skręt", "skręcan", "skręcić", "zajmowany pas", "stację paliw", "stacji paliw"],
+    "is_statutory": true
+  },
+  "oswietlenie_pojazdu": {
+    "statute": "Art. 51 Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 51 UPRD",
+    "rule": "Kierujący pojazdem jest obowiązany używać świateł mijania podczas jazdy w warunkach normalnej przejrzystości powietrza. Światła do jazdy dziennej mogą być stosowane od świtu do zmierzchu w warunkach normalnej przejrzystości.",
+    "keywords": ["światł", "mijania", "przeciwmgłow", "drogow", "do jazdy dziennej", "oświetlenie"],
+    "is_statutory": true
+  },
+  "stan_techniczny_opony": {
+    "statute": "Art. 66 UPRD oraz Rozporządzenie Ministra Infrastruktury w sprawie warunków technicznych pojazdów.",
+    "short_citation": "Art. 66 UPRD, Rozp. ws. warunków technicznych",
+    "rule": "Pojazd uczestniczący w ruchu musi być tak zbudowany, wyposażony i utrzymany, aby korzystanie z niego nie zagrażało bezpieczeństwu osób nim jadących lub innych uczestników ruchu.",
+    "keywords": ["opon", "bieżnik", "abs", "esp", "asr", "twi", "hamulc", "układ hamulcowy", "stan techniczny", "płyn hamulcowy", "olej silnikowy", "silnik", "rozrusznik", "akumulator", "zapłon", "bezpiecznik", "płyn chłodząc", "płynu chłodząc"],
+    "is_statutory": true
+  },
+  "pasy_foteliki": {
+    "statute": "Art. 39 Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 39 UPRD",
+    "rule": "Kierujący i pasażerowie są obowiązani korzystać z pasów bezpieczeństwa. Dzieci o wzroście poniżej 150 cm przewozi się w foteliku bezpieczeństwa lub innym urządzeniu przytrzymującym dla dzieci.",
+    "keywords": ["fotelik", "pasy bezpieczeństwa", "pasów bezpieczeństwa", "dzieck", "przewożenie dzieci"],
+    "is_statutory": true
+  },
+  "przejazd_kolejowy": {
+    "statute": "Art. 28 Ustawy Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 28 UPRD",
+    "rule": "Kierujący pojazdem zbliżając się do przejazdu kolejowego lub tramwajowego jest obowiązany zachować szczególną ostrożność. Zabrania się wjazdu na przejazd, jeżeli opuszczanie zapór zostało rozpoczęte lub zapory nie zostały całkowicie podniesione.",
+    "keywords": ["kolejow", "tramwajow", "zapory", "półzapory", "rogatki", "krzyż św. andrzeja", "pociąg"],
+    "is_statutory": true
+  },
+  "ecodriving": {
+    "statute": "unknown",
+    "short_citation": "Zasady techniki kierowania (ecodriving)",
+    "rule": "Ecodriving (ekologiczna i ekonomiczna jazda) nie posiada bezpośredniej podstawy w UPRD. Opiera się na zasadach optymalnego doboru przełożeń (zmiana biegu przy 2000–2500 obr./min), hamowaniu silnikiem i płynnej jeździe.",
+    "keywords": ["ekologicz", "ecodriving", "ekonomiczn", "emisj", "zużycie paliwa", "obrotów silnika", "optymalny bieg", "zmiana biegu", "hamowanie silnikiem", "wyższy bieg", "niższy bieg"],
+    "is_statutory": false
+  },
+  "skrzyzowanie_rownorzedne": {
+    "statute": "Art. 25 ust. 1 Ustawy z dnia 20 czerwca 1997 r. Prawo o ruchu drogowym (UPRD).",
+    "short_citation": "Art. 25 ust. 1 UPRD",
+    "rule": "Na skrzyżowaniu równorzędnym kierujący jest obowiązany ustąpić pierwszeństwa pojazdowi nadjeżdżającemu z prawej strony, a skręcając w lewo – także pojazdowi jadącemu z kierunku przeciwnego na wprost lub skręcającemu w prawo.",
+    "keywords": ["skrzyżowan", "pierwszeństw", "prawej ręki", "reguła prawej strony", "ustąpić pierwszeństwa"],
+    "is_statutory": true
+  }
+}

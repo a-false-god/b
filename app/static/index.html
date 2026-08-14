@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1e293b">
+  <title>Prawko B — Nauka Egzaminu Prawka B</title>
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      🚗 Prawko B MVP
+    </div>
+    <nav>
+      <a href="#" data-view="dashboard" class="active">Pulpit</a>
+      <a href="#" data-view="nauka">Nauka</a>
+      <a href="#" data-view="analiza">Panel Analizy</a>
+      <a href="#" data-view="review">Kolejka Weryfikacji</a>
+    </nav>
+    <div id="auth-status" class="auth-bar">
+      <!-- Rendered dynamically (Login button / Username) -->
+    </div>
+  </header>
+
+  <main>
+    <!-- Nauka View -->
+    <section id="view-nauka">
+      <div class="mode-toggle-container">
+        <div>
+          <strong id="mode-title-text">⚡ Kompozytor Sesji (Domyślny)</strong>
+          <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem;" id="mode-desc-text">Kolejka priorytetowa (niewidziane 3-pkt → błędy → powtórki) z przeplataniem domen</span>
+        </div>
+        <div class="mode-toggle-group">
+          <button class="mode-toggle-btn active" id="btn-mode-auto" onclick="switchLearningMode('auto')">⚡ Kompozytor</button>
+          <button class="mode-toggle-btn" id="btn-mode-drill" onclick="switchLearningMode('drill')">🎯 Tryb Słaby Punkt</button>
+        </div>
+      </div>
+
+      <div class="filter-bar" id="learning-filter-bar" style="display: none;">
+        <div class="filter-group">
+          <label for="filter-scope">Zakres:</label>
+          <select id="filter-scope">
+            <option value="">Wszystkie</option>
+            <option value="PODSTAWOWY">Podstawowy</option>
+            <option value="SPECJALISTYCZNY">Specjalistyczny</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-axisA">Oś A (Poznawcza):</label>
+          <select id="filter-axisA">
+            <option value="">Wszystkie</option>
+            <option value="pamiec">Pamięć</option>
+            <option value="rozumienie">Rozumienie</option>
+            <option value="zastosowanie">Zastosowanie</option>
+            <option value="analiza">Analiza</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-axisB">Oś B (Domena):</label>
+          <select id="filter-axisB">
+            <option value="">Wszystkie</option>
+            <option value="znaki_i_sygnaly">Znaki i sygnały</option>
+            <option value="pierwszenstwo">Pierwszeństwo</option>
+            <option value="manewry_i_pozycja">Manewry i pozycja</option>
+            <option value="predkosc_i_odleglosci">Prędkość i odległości</option>
+            <option value="technika_pojazdu">Technika pojazdu</option>
+            <option value="administracja_i_kary">Administracja i kary</option>
+            <option value="pierwsza_pomoc">Pierwsza pomoc</option>
+            <option value="ekologia">Ekologia</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-search">Szukaj:</label>
+          <input type="text" id="filter-search" placeholder="Treść lub ID pytania..." />
+        </div>
+      </div>
+
+      <div id="question-container">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="controls-footer">
+        <div class="hotkey-legend">
+          Nawigacja: <kbd>←</kbd> <kbd>→</kbd> | Odpowiedź: <kbd>T</kbd>/<kbd>N</kbd> lub <kbd>A</kbd>/<kbd>B</kbd>/<kbd>C</kbd>
+        </div>
+        <div class="nav-buttons">
+          <button class="btn-secondary" onclick="navigatePrev()">Poprzednie (<kbd>←</kbd>)</button>
+          <button class="btn-secondary" onclick="navigateNext()">Następne (<kbd>→</kbd>)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard View -->
+    <section id="view-dashboard">
+      <!-- Rendered dynamically -->
+    </section>
+
+    <!-- Panel Analizy View -->
+    <section id="view-analiza" style="display: none;">
+      <!-- Rendered dynamically -->
+    </section>
+
+    <!-- Review Queue View -->
+    <section id="view-review" style="display: none;">
+      <!-- Rendered dynamically -->
+    </section>
+  </main>
+
+  <!-- Login/Register Modal -->
+  <div id="auth-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card">
+      <h3 id="modal-title">Zaloguj się do Prawko B</h3>
+      <div id="auth-error-msg" style="color: var(--danger); font-size: 0.9rem; margin-top: 0.5rem;"></div>
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+        <input type="text" id="auth-login" placeholder="Login / Nazwa użytkownika" class="filter-group input" />
+        <input type="password" id="auth-password" placeholder="Hasło" class="filter-group input" />
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+          <button class="answer-btn correct" style="flex: 1; text-align: center; justify-content: center;" onclick="handleAuthSubmit('login')">Zaloguj się</button>
+          <button class="btn-secondary" style="flex: 1;" onclick="handleAuthSubmit('register')">Zarejestruj</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weekly Readiness Exam Modal -->
+  <div id="exam-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card" style="max-width: 720px; width: 100%;">
+      <div id="exam-modal-content">
+        <!-- Rendered dynamically during exam check execution -->
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

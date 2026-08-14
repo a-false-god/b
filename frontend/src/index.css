@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Ritual Light Theme Tokens */
+    --background: 240 11% 98.6%;      /* #fbfbfc */
+    --foreground: 240 6% 6.7%;        /* #101012 */
+    --backdrop: 240 10% 93.3%;        /* #ececf0 */
+    --card: 0 0% 100%;                /* #ffffff */
+    --card-foreground: 240 6% 6.7%;   /* #101012 */
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 6% 6.7%;
+    --primary: 240 6% 6.7%;           /* #101012 Inverted primary */
+    --primary-foreground: 0 0% 100%;  /* #ffffff */
+    --secondary: 240 10% 95%;         /* #f2f2f5 */
+    --secondary-foreground: 240 6% 6.7%;
+    --muted: 240 10% 94%;
+    --muted-foreground: 240 4% 38.6%; /* #5f5f66 - contrast >= 7:1 */
+    --faint: 240 4% 57.5%;            /* #8f8f96 */
+    --accent: 221 83% 53.3%;          /* #2563eb */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 50.6%;       /* #dc2626 */
+    --destructive-foreground: 0 0% 98%;
+    --success: 142 76% 36.3%;         /* #16a34a */
+    --success-foreground: 0 0% 98%;
+    --border: 240 11.5% 90.2%;        /* #e3e3e9 hairline */
+    --input: 240 11.5% 90.2%;
+    --ring: 221 83% 53.3%;
+    --radius: 12px;
+  }
+
+  .dark {
+    /* Ritual Dark Theme Tokens */
+    --background: 240 10% 5.7%;       /* #0d0d10 */
+    --foreground: 0 0% 98%;           /* #fafafa */
+    --backdrop: 240 10% 3.9%;         /* #09090b */
+    --card: 240 8% 9.4%;              /* #16161a */
+    --card-foreground: 0 0% 98%;      /* #fafafa */
+    --popover: 240 8% 9.4%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;              /* #fafafa Inverted B/W */
+    --primary-foreground: 240 10% 5.7%; /* #0d0d10 */
+    --secondary: 240 8% 13%;          /* #1f1f25 */
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 8% 12%;
+    --muted-foreground: 240 4% 62%;   /* #9a9aa2 - contrast >= 7:1 */
+    --faint: 240 4% 43.5%;            /* #6b6b73 */
+    --accent: 212 76% 63.9%;          /* #5E9FE8 disciplined blue */
+    --accent-foreground: 240 10% 5.7%;
+    --destructive: 0 84% 60.2%;       /* #ef4444 */
+    --destructive-foreground: 0 0% 98%;
+    --success: 142 71% 45.3%;         /* #22c55e */
+    --success-foreground: 0 0% 98%;
+    --border: 240 8% 14.9%;           /* #232329 hairline */
+    --input: 240 8% 14.9%;
+    --ring: 212 76% 63.9%;
+    --radius: 12px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.015em;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Ambient Radial Glow Shell */
+.ambient-shell {
+  background-color: hsl(var(--background));
+  background-image: radial-gradient(circle at 50% -10%, rgba(94, 159, 232, 0.05) 0%, rgba(13, 13, 16, 0) 65%);
+}
+
+.light .ambient-shell {
+  background-color: hsl(var(--background));
+  background-image: radial-gradient(circle at 50% -10%, rgba(37, 99, 235, 0.04) 0%, rgba(251, 251, 252, 0) 65%);
+}
+
+/* Floating Tab Bar Shadow (Borders over shadows; shadow allowed under tab bar & modal) */
+.tab-bar-shadow {
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.45), 0 0 0 1px hsl(var(--border));
+}
+
+.light .tab-bar-shadow {
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 0 0 1px hsl(var(--border));
+}
+
+/* Modal Shadow */
+.modal-shadow {
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px hsl(var(--border));
+}
+
+.light .modal-shadow {
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.12), 0 0 0 1px hsl(var(--border));
+}
+
+/* Custom Minimal Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

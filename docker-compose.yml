@@ -1,0 +1,17 @@
+services:
+  prawko:
+    build: .
+    container_name: prawko-b
+    ports:
+      - "8000:8000"
+    volumes:
+      # Baza SQLite (data/prawko.sqlite) — trwałość poza kontenerem
+      - ./data:/app/data
+      # Media (MP4/JPG) — montowane read-only; usuń ":ro", jeśli chcesz
+      # odpalać convert_media.py wewnątrz kontenera
+      - ./media:/app/media:ro
+    environment:
+      - TZ=Europe/Warsaw
+    env_file:
+      - .env
+    restart: unless-stopped
