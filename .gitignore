@@ -23,20 +23,19 @@ yarn-debug.log*
 yarn-error.log*
 
 # Static & Database & Media files
-media/
+/media/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
 *.xlsx
-data/backups/
-.frames_cache/
+/data/backups/
+/.frames_cache/
 *.restoring.tmp*
 .DS_Store
 Thumbs.db
 walkthrough.md
+/src/
 *screenshots/
-src/
-frontend/src/screenshots/
 
 # Archives and temporary files
 prawko-main/
