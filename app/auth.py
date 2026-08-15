@@ -7,6 +7,7 @@ Includes anti-enumeration timing equalization, in-memory IP rate limiting, and s
 import base64
 import collections
 import hashlib
+import os
 import secrets
 import time
 from typing import Optional, Dict, List
@@ -27,6 +28,20 @@ SESSION_MAX_AGE = 86400 * 30  # 30 days
 RATE_LIMIT_MAX_ATTEMPTS = 5
 RATE_LIMIT_WINDOW_SECONDS = 60.0
 _IP_ATTEMPT_LOG: Dict[str, List[float]] = collections.defaultdict(list)
+
+
+def check_registration_key(provided_key: Optional[str] = None) -> bool:
+    """
+    Checks registration key if REGISTRATION_KEY environment variable is set.
+    If REGISTRATION_KEY is unset or empty, registration is open (returns True).
+    If set, provided_key must match constant-time via secrets.compare_digest.
+    """
+    reg_key = os.environ.get("REGISTRATION_KEY", "").strip()
+    if not reg_key:
+        return True
+    if not provided_key:
+        return False
+    return secrets.compare_digest(provided_key.strip(), reg_key)
 
 
 def hash_password(password: str) -> str:

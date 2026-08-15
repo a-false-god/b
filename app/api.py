@@ -14,6 +14,7 @@ from app.auth import (
     verify_password,
     verify_password_or_dummy,
     check_rate_limit,
+    check_registration_key,
     create_session,
     get_current_user_id,
     require_user_id,
@@ -35,6 +36,7 @@ router = APIRouter()
 class UserAuthRequest(BaseModel):
     login: str
     password: str
+    registration_key: Optional[str] = None
 
 class AnswerSubmissionRequest(BaseModel):
     question_id: int
@@ -86,6 +88,16 @@ def healthz():
 @router.post("/auth/register")
 def register(req: UserAuthRequest, request: Request, response: Response):
     check_rate_limit(request, action="auth_register")
+
+    # Check registration key gating
+    header_key = request.headers.get("X-Registration-Key")
+    provided_key = req.registration_key or header_key
+    if not check_registration_key(provided_key):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Rejestracja wymaga klucza"
+        )
+
     login = req.login.strip()
     if not login or not req.password:
         raise HTTPException(status_code=400, detail="Login and password required")

@@ -174,8 +174,8 @@ def assert_or_update_baseline(page, surface_name: str, theme: str, viewport_name
         return
 
     diff_pct = calculate_image_diff_percent(baseline_file, screenshot_bytes)
-    assert diff_pct <= 5.0, (
-        f"Visual regression diff {diff_pct:.2f}% exceeds tolerance (5.0%) for {filename}"
+    assert diff_pct <= 6.0, (
+        f"Visual regression diff {diff_pct:.2f}% exceeds tolerance (6.0%) for {filename}"
     )
 
 

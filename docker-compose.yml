@@ -3,7 +3,7 @@ services:
     build: .
     container_name: prawko-b
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       # Baza SQLite (data/prawko.sqlite) — trwałość poza kontenerem
       - ./data:/app/data
@@ -15,3 +15,19 @@ services:
     env_file:
       - .env
     restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: prawko-caddy
+    network_mode: host
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    depends_on:
+      - prawko
+
+volumes:
+  caddy_data:
+  caddy_config:

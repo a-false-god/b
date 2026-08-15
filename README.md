@@ -97,3 +97,72 @@ python tools/clarify_metrics.py
 - **1 941**: Odwołania do mediów dla wszystkich pytań kat. B (w tym w trakcie weryfikacji).
 - **1 789**: Odwołania do mediów w aktywnej puli kat. B (oraz unikalne pliki mediów dla wszystkich rekordów).
 - **1 566**: Unikalne pliki mediów w aktywnej puli kat. B.
+
+---
+
+## Wdrożenie produkcyjne (Oracle Cloud Always Free ARM64 — Task P6)
+
+Architektura produkcyjna:
+- **Serwer**: Oracle Cloud A1.Flex ARM64 (Ubuntu 24.04 LTS, region domowy Frankfurt).
+- **Ingress & TLS**: Caddy 2 reverse proxy z automatycznymi certyfikatami Let's Encrypt (`https://prawko.lqdb.pl`).
+- **Aplikacja**: FastAPI backend + React SPA serwowane w Dockerze (izolowane na `127.0.0.1:8000`).
+- **Kopie zapasowe**: Automatyczny nightly cron rclone o `04:00` synchronizujący `data/backups/`.
+
+### 1. Wymagania wstępne i DNS
+Upewnij się, że rekord DNS `A` dla `prawko.lqdb.pl` wskazuje na publiczny adres IP VPS przed uruchomieniem Caddy.
+W OCI Security List otwórz porty Ingress: TCP 22 (SSH), TCP 80 (HTTP) oraz TCP 443 (HTTPS).
+
+### 2. Konfiguracja na serwerze VPS
+```bash
+# Klonowanie repozytorium
+git clone https://github.com/a-false-god/b.git ~/b
+cd ~/b
+
+# Utworzenie pliku .env z kluczem rejestracji
+cp .env.example .env # lub wygeneruj:
+echo "REGISTRATION_KEY=$(openssl rand -hex 16)" >> .env
+echo "TZ=Europe/Warsaw" >> .env
+```
+
+### 3. Synchronizacja mediów i bazy danych
+Z maszyny lokalnej prześlij pliki mediów (~2 GB) oraz bazę SQLite:
+```bash
+rsync -avz --progress ./media/ ubuntu@<VPS_IP>:~/b/media/
+rsync -avz --progress ./data/prawko.sqlite ubuntu@<VPS_IP>:~/b/data/prawko.sqlite
+```
+
+### 4. Uruchomienie Docker Compose
+```bash
+docker compose up -d --build
+```
+Weryfikacja lokalna:
+```bash
+curl -s http://localhost:8000/healthz
+# Oczekiwana odpowiedź: {"status":"ok","db_ok":true,"questions_count":3698}
+```
+
+### 5. Utwardzenie systemu (Hardening)
+```bash
+# Firewall UFW
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw --force enable
+
+# Blokada logowania hasłem po SSH (zachowanie kluczy)
+sudo sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true
+sudo systemctl restart ssh || sudo systemctl restart sshd
+
+# Automatyczne aktualizacje bezpieczeństwa
+sudo apt update && sudo apt install -y unattended-upgrades
+sudo systemctl enable --now unattended-upgrades
+```
+
+### 6. Harmonogram kopii zapasowych (Rclone Cron)
+Skonfiguruj zdalny magazyn w rclone (`rclone config`), dodaj `BACKUP_REMOTE=twoj_remote` do `~/.bashrc` / `~/b/.env` i dodaj zadanie do crontaba:
+```bash
+crontab -e
+# Dodaj wpis:
+0 4 * * * /home/ubuntu/b/ops/rclone-backup.sh >> /var/log/rclone-backup.log 2>&1
+```
+
