@@ -10,6 +10,7 @@ import { NaukaView } from "@/components/learning/NaukaView"
 import { AnalyticsView } from "@/components/analytics/AnalyticsView"
 import { ReviewQueueView } from "@/components/review/ReviewQueueView"
 import { ExamDialog } from "@/components/exam/ExamDialog"
+import { ErrorBoundary } from "@/components/common/ErrorBoundary"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -115,32 +116,35 @@ export function App() {
 
         {/* Main Content Area — Centered 480–540px column */}
         <main className="flex-1 w-full max-w-[540px] mx-auto px-3.5 sm:px-4 py-2 sm:py-3 pb-20 sm:pb-24">
-          {currentTab === "dashboard" && (
-            <DashboardView
-              user={user}
-              onOpenAuth={() => handleOpenAuth()}
-              onNavigateToNauka={() => handleTabChange("nauka")}
-              onOpenExam={() => setExamOpen(true)}
-            />
-          )}
+          <ErrorBoundary>
+            {currentTab === "dashboard" && (
+              <DashboardView
+                user={user}
+                onOpenAuth={() => handleOpenAuth()}
+                onNavigateToNauka={() => handleTabChange("nauka")}
+                onOpenExam={() => setExamOpen(true)}
+              />
+            )}
 
-          {currentTab === "nauka" && (
-            <NaukaView
-              user={user}
-              onOpenAuth={handleOpenAuth}
-              onAnswerSubmitted={() => queryClient.invalidateQueries({ queryKey: ["dashboard"] })}
-            />
-          )}
+            {currentTab === "nauka" && (
+              <NaukaView
+                user={user}
+                onOpenAuth={handleOpenAuth}
+                onAnswerSubmitted={() => queryClient.invalidateQueries({ queryKey: ["dashboard"] })}
+              />
+            )}
 
-          {currentTab === "analiza" && (
-            <AnalyticsView
-              user={user}
-              onOpenAuth={() => handleOpenAuth()}
-            />
-          )}
+            {currentTab === "analiza" && (
+              <AnalyticsView
+                user={user}
+                onOpenAuth={() => handleOpenAuth()}
+              />
+            )}
 
-          {currentTab === "review" && <ReviewQueueView />}
+            {currentTab === "review" && <ReviewQueueView />}
+          </ErrorBoundary>
         </main>
+
 
         {/* Floating Bottom Tab Bar */}
         <BottomTabBar

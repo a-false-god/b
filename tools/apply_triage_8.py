@@ -43,7 +43,7 @@ def apply_triage():
         # 2. Update vision_review decision
         cursor.execute("""
             UPDATE vision_review
-            SET decision = 'auto_accepted',
+            SET decision = 'manual_accepted',
                 confidence = 1.0,
                 rationale = 'Ręcznie zatwierdzone oznakowanie skrzyżowania (znaki pierwszeństwa/sygnalizacja).'
             WHERE question_id = ?

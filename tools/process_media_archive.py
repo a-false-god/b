@@ -67,7 +67,7 @@ def convert_wmv_to_mp4(src_path: Path, dst_path: Path) -> bool:
             str(dst_path)
         ]
         try:
-            subprocess.run(cmd, capture_output=True, text=True, check=True)
+            subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", check=True)
             return True
         except (subprocess.SubprocessError, FileNotFoundError):
             continue

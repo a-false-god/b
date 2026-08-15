@@ -4,12 +4,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { MediaViewer } from "@/components/media/MediaViewer"
 import { Question, ExamSubmissionResponse } from "@/types"
-import { Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react"
+import { Clock, CheckCircle2, XCircle, Loader2, X } from "lucide-react"
 
 interface ExamDialogProps {
   open: boolean
@@ -147,28 +147,40 @@ export function ExamDialog({
   }
 
   const isTimeCritical = remainingSeconds < 5 * 60 // < 5:00
+  const progressPercent =
+    questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[580px] max-h-[92vh] overflow-y-auto p-5 sm:p-6 rounded-[12px] border border-border bg-card modal-shadow">
-        <DialogHeader className="border-b border-border pb-3.5">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-base sm:text-lg font-bold flex items-center gap-2 text-foreground">
-              <span>Sprawdzian Gotowości</span>
+      <DialogContent
+        hideCloseButton
+        className="sm:max-w-[540px] max-h-[92vh] overflow-y-auto p-5 sm:p-6 rounded-[12px] border border-border bg-card modal-shadow"
+      >
+        <DialogHeader className="pb-1">
+          <div className="flex items-center justify-between gap-3">
+            <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
+              Sprawdzian Gotowości
             </DialogTitle>
 
-            {!report && questions.length > 0 && (
-              <div
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-[8px] font-mono text-base font-bold tabular-nums border select-none ${
-                  isTimeCritical
-                    ? "bg-destructive/15 text-destructive border-destructive/40 animate-pulse"
-                    : "bg-secondary text-foreground border-border"
-                }`}
-              >
-                <Clock className="w-4 h-4" />
-                <span>{formatTimer(remainingSeconds)}</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              {!report && questions.length > 0 && (
+                <div
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] font-mono text-xs font-bold tabular-nums border select-none ${
+                    isTimeCritical
+                      ? "bg-destructive/15 text-destructive border-destructive/40 animate-pulse"
+                      : "bg-secondary/80 text-foreground border-border/80"
+                  }`}
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{formatTimer(remainingSeconds)}</span>
+                </div>
+              )}
+
+              <DialogClose className="w-7 h-7 rounded-[6px] border border-border/80 bg-secondary/80 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                <X className="w-3.5 h-3.5" />
+                <span className="sr-only">Zamknij</span>
+              </DialogClose>
+            </div>
           </div>
         </DialogHeader>
 
@@ -229,17 +241,27 @@ export function ExamDialog({
           </div>
         ) : currentQ ? (
           /* Question Exam Card */
-          <div className="space-y-4 py-2">
-            {/* Meta bar */}
-            <div className="flex items-center justify-between text-xs font-mono select-none">
-              <div className="flex items-center gap-1.5">
-                <Badge variant="outline" className="rounded-[4px]">{currentQ.scope}</Badge>
-                <Badge variant={currentQ.points === 3 ? "pts3" : "outline"} className="tabular-nums font-bold rounded-[4px]">
-                  {currentQ.points} PKT
-                </Badge>
+          <div className="space-y-3.5 py-1">
+            {/* Progress line + counter */}
+            <div className="flex items-center gap-3">
+              <div className="h-[2.5px] bg-secondary/80 rounded-full overflow-hidden flex-1 relative">
+                <div
+                  className="h-full bg-accent rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${progressPercent}%` }}
+                />
               </div>
-              <span className="text-muted-foreground text-[11px] tabular-nums">
+              <span className="text-[11px] font-mono text-muted-foreground select-none tabular-nums shrink-0">
                 {currentIndex + 1} / {questions.length}
+              </span>
+            </div>
+
+            {/* Scope / points chips: OUTLINE mono, not filled */}
+            <div className="flex items-center gap-1.5 pt-0.5">
+              <span className="px-2 py-0.5 rounded-[6px] border border-border/80 text-muted-foreground text-[10px] font-mono uppercase tracking-wider select-none">
+                {currentQ.scope}
+              </span>
+              <span className="px-2 py-0.5 rounded-[6px] border border-border/80 text-muted-foreground text-[10px] font-mono uppercase tracking-wider tabular-nums select-none">
+                {currentQ.points} PKT
               </span>
             </div>
 
@@ -251,29 +273,37 @@ export function ExamDialog({
               {currentQ.q_pl}
             </h3>
 
-            {/* Answer Options (min 64px, 12px radius, 1.5px border, 30px key badges) */}
+            {/* Answer Options (min 64px, 12px radius, 1.5px border, 30px key badges on LEFT) */}
             <div className="grid gap-2.5 pt-1">
               {currentQ.type === "TN" ? (
                 <>
                   <button
                     type="button"
                     onClick={() => handleSelectAnswer("T")}
-                    className="group flex items-center justify-between min-h-[64px] py-3 px-4 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-all active:scale-[0.98] text-left"
+                    className="group flex items-center min-h-[64px] py-3.5 px-4 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-all active:scale-[0.98] text-left"
                   >
-                    <span className="text-sm font-semibold">TAK</span>
-                    <span className="w-[30px] h-[30px] rounded-[8px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent inline-flex items-center justify-center font-mono font-bold text-xs select-none">
-                      T
-                    </span>
+                    <div className="flex items-center gap-3.5 w-full">
+                      <span className="w-[30px] h-[30px] rounded-[8px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent inline-flex items-center justify-center font-mono font-bold text-xs shrink-0 select-none">
+                        T
+                      </span>
+                      <span className="text-sm sm:text-base font-semibold text-foreground/95 flex-1">
+                        Tak
+                      </span>
+                    </div>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSelectAnswer("N")}
-                    className="group flex items-center justify-between min-h-[64px] py-3 px-4 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-all active:scale-[0.98] text-left"
+                    className="group flex items-center min-h-[64px] py-3.5 px-4 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-all active:scale-[0.98] text-left"
                   >
-                    <span className="text-sm font-semibold">NIE</span>
-                    <span className="w-[30px] h-[30px] rounded-[8px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent inline-flex items-center justify-center font-mono font-bold text-xs select-none">
-                      N
-                    </span>
+                    <div className="flex items-center gap-3.5 w-full">
+                      <span className="w-[30px] h-[30px] rounded-[8px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent inline-flex items-center justify-center font-mono font-bold text-xs shrink-0 select-none">
+                        N
+                      </span>
+                      <span className="text-sm sm:text-base font-semibold text-foreground/95 flex-1">
+                        Nie
+                      </span>
+                    </div>
                   </button>
                 </>
               ) : (
@@ -281,41 +311,52 @@ export function ExamDialog({
                   <button
                     type="button"
                     onClick={() => handleSelectAnswer("A")}
-                    className="group flex items-center justify-between min-h-[64px] py-3 px-4 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-all active:scale-[0.98] text-left"
+                    className="group flex items-center min-h-[64px] py-3.5 px-4 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-all active:scale-[0.98] text-left"
                   >
-                    <span className="text-sm font-medium leading-snug flex-1 pr-2">
-                      {currentQ.a_pl}
-                    </span>
-                    <span className="w-[30px] h-[30px] rounded-[8px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent inline-flex items-center justify-center font-mono font-bold text-xs shrink-0 select-none">
-                      A
-                    </span>
+                    <div className="flex items-center gap-3.5 w-full">
+                      <span className="w-[30px] h-[30px] rounded-[8px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent inline-flex items-center justify-center font-mono font-bold text-xs shrink-0 select-none">
+                        A
+                      </span>
+                      <span className="text-sm sm:text-base font-normal leading-snug text-foreground/95 flex-1">
+                        {currentQ.a_pl}
+                      </span>
+                    </div>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSelectAnswer("B")}
-                    className="group flex items-center justify-between min-h-[64px] py-3 px-4 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-all active:scale-[0.98] text-left"
+                    className="group flex items-center min-h-[64px] py-3.5 px-4 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-all active:scale-[0.98] text-left"
                   >
-                    <span className="text-sm font-medium leading-snug flex-1 pr-2">
-                      {currentQ.b_pl}
-                    </span>
-                    <span className="w-[30px] h-[30px] rounded-[8px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent inline-flex items-center justify-center font-mono font-bold text-xs shrink-0 select-none">
-                      B
-                    </span>
+                    <div className="flex items-center gap-3.5 w-full">
+                      <span className="w-[30px] h-[30px] rounded-[8px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent inline-flex items-center justify-center font-mono font-bold text-xs shrink-0 select-none">
+                        B
+                      </span>
+                      <span className="text-sm sm:text-base font-normal leading-snug text-foreground/95 flex-1">
+                        {currentQ.b_pl}
+                      </span>
+                    </div>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSelectAnswer("C")}
-                    className="group flex items-center justify-between min-h-[64px] py-3 px-4 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-all active:scale-[0.98] text-left"
+                    className="group flex items-center min-h-[64px] py-3.5 px-4 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-all active:scale-[0.98] text-left"
                   >
-                    <span className="text-sm font-medium leading-snug flex-1 pr-2">
-                      {currentQ.c_pl}
-                    </span>
-                    <span className="w-[30px] h-[30px] rounded-[8px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent inline-flex items-center justify-center font-mono font-bold text-xs shrink-0 select-none">
-                      C
-                    </span>
+                    <div className="flex items-center gap-3.5 w-full">
+                      <span className="w-[30px] h-[30px] rounded-[8px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent inline-flex items-center justify-center font-mono font-bold text-xs shrink-0 select-none">
+                        C
+                      </span>
+                      <span className="text-sm sm:text-base font-normal leading-snug text-foreground/95 flex-1">
+                        {currentQ.c_pl}
+                      </span>
+                    </div>
                   </button>
                 </>
               )}
+            </div>
+
+            {/* Quiet footer note */}
+            <div className="text-xs text-muted-foreground text-center select-none pt-2 font-sans">
+              Bez podpowiedzi — jak na egzaminie państwowym.
             </div>
           </div>
         ) : (

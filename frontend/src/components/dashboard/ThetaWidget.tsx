@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { formatCount } from "@/lib/utils"
 
 interface ThetaWidgetProps {
   theta: number
@@ -94,7 +95,7 @@ export function ThetaWidget({
         <div className="grid grid-cols-3 gap-2 pt-0.5 select-none">
           <div>
             <div className="text-base sm:text-lg font-mono font-bold text-foreground tabular-nums leading-tight">
-              {n || 18}
+              {formatCount(n || 18)}
             </div>
             <div className="text-[11px] text-muted-foreground">odpowiedzi</div>
           </div>
@@ -117,7 +118,7 @@ export function ThetaWidget({
           <div className="flex items-center justify-between text-xs text-muted-foreground select-none">
             <span className="font-medium">Krzywa formy</span>
             <span className="font-mono text-[11px] tabular-nums">
-              {n > 0 ? `${n} odp.` : "18 odp."}
+              {n > 0 ? `${formatCount(n)} odp.` : "18 odp."}
             </span>
           </div>
 

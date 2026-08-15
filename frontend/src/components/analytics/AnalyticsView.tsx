@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { BarChart3, Clock, Shuffle, Flame, Loader2, Zap, AlertTriangle, HelpCircle } from "lucide-react"
+import { formatCount } from "@/lib/utils"
 
 interface AnalyticsViewProps {
   user: User | null
@@ -132,9 +133,9 @@ export function AnalyticsView({ user, onOpenAuth }: AnalyticsViewProps) {
               <div className="bg-muted-foreground/30 rounded-r-full" style={{ width: `${Math.max(0, 100 - pctSeen)}%` }} />
             </div>
             <div className="flex items-center justify-between text-xs font-mono text-muted-foreground pt-1 select-none">
-              <span>Opanowane: <strong className="text-foreground tabular-nums">{covMastered}</strong></span>
-              <span>Widziane: <strong className="text-foreground tabular-nums">{covSeen}</strong></span>
-              <span>Niewidziane: <strong className="text-muted-foreground tabular-nums">{covNever}</strong></span>
+              <span>Opanowane: <strong className="text-foreground tabular-nums">{formatCount(covMastered)}</strong></span>
+              <span>Widziane: <strong className="text-foreground tabular-nums">{formatCount(covSeen)}</strong></span>
+              <span>Niewidziane: <strong className="text-muted-foreground tabular-nums">{formatCount(covNever)}</strong></span>
             </div>
           </CardContent>
         </Card>
@@ -150,19 +151,19 @@ export function AnalyticsView({ user, onOpenAuth }: AnalyticsViewProps) {
                 <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                   <Zap className="w-3 h-3 text-accent" /> Slips (&lt;8s)
                 </span>
-                <strong className="text-lg text-foreground tabular-nums block mt-1">{reason?.slips || 0}</strong>
+                <strong className="text-lg text-foreground tabular-nums block mt-1">{formatCount(reason?.slips || 0)}</strong>
               </div>
               <div className="p-2 rounded-[8px] bg-secondary/30 border border-border">
                 <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3 text-destructive" /> Mistakes
                 </span>
-                <strong className="text-lg text-destructive tabular-nums block mt-1">{reason?.mistakes || 0}</strong>
+                <strong className="text-lg text-destructive tabular-nums block mt-1">{formatCount(reason?.mistakes || 0)}</strong>
               </div>
               <div className="p-2 rounded-[8px] bg-secondary/30 border border-border">
                 <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                   <HelpCircle className="w-3 h-3 text-accent" /> Uncertainty
                 </span>
-                <strong className="text-lg text-accent tabular-nums block mt-1">{reason?.uncertainty || 0}</strong>
+                <strong className="text-lg text-accent tabular-nums block mt-1">{formatCount(reason?.uncertainty || 0)}</strong>
               </div>
             </div>
           </CardContent>
@@ -182,7 +183,7 @@ export function AnalyticsView({ user, onOpenAuth }: AnalyticsViewProps) {
                   <div key={item.axis_value} className="py-2 flex items-center justify-between text-xs">
                     <span className="font-medium text-foreground capitalize">{item.axis_value}</span>
                     <Badge variant="destructive" className="tabular-nums font-mono rounded-[4px]">
-                      {item.error_count} błędów
+                      {formatCount(item.error_count)} błędów
                     </Badge>
                   </div>
                 ))
@@ -210,7 +211,7 @@ export function AnalyticsView({ user, onOpenAuth }: AnalyticsViewProps) {
                       <span>→</span>
                       <span className="text-success">Popr: {opt.correct_option}</span>
                       <Badge variant="outline" className="tabular-nums text-[10px] ml-1 rounded-[4px]">
-                        {opt.confused_count}x
+                        {formatCount(opt.confused_count)}x
                       </Badge>
                     </div>
                   </div>
@@ -261,7 +262,7 @@ export function AnalyticsView({ user, onOpenAuth }: AnalyticsViewProps) {
                     <div className="flex items-center justify-between font-mono select-none">
                       <span className="font-semibold text-foreground">#{q.question_id}</span>
                       <Badge variant="destructive" className="tabular-nums text-[10px] rounded-[4px]">
-                        {q.error_count} błędów
+                        {formatCount(q.error_count)} błędów
                       </Badge>
                     </div>
                     <p className="text-[11px] text-muted-foreground truncate">{q.q_pl}</p>

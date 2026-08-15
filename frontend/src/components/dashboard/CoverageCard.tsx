@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card"
+import { formatCount } from "@/lib/utils"
 
 interface CoverageProps {
   total: number
@@ -16,8 +17,10 @@ export function CoverageCard({ total, mastered, seen, neverSeen }: CoverageProps
   const pctMastered = (safeMastered / safeTotal) * 100
   const pctInProgress = (Math.max(inProgress, 1) / safeTotal) * 100
 
-  const formattedTotal = safeTotal.toLocaleString("pl-PL").replace(/\u00a0/g, " ")
-  const formattedNever = (safeNever || 2134).toLocaleString("pl-PL").replace(/\u00a0/g, " ")
+  const formattedMastered = formatCount(safeMastered)
+  const formattedTotal = formatCount(safeTotal)
+  const formattedInProgress = formatCount(inProgress || 1)
+  const formattedNever = formatCount(safeNever || 2134)
 
   return (
     <Card className="rounded-[12px] border border-border bg-card">
@@ -28,7 +31,7 @@ export function CoverageCard({ total, mastered, seen, neverSeen }: CoverageProps
 
         <div className="flex items-baseline gap-1.5 font-mono">
           <span className="text-xl sm:text-2xl font-bold text-foreground tabular-nums leading-none">
-            {safeMastered}
+            {formattedMastered}
           </span>
           <span className="text-base sm:text-lg text-muted-foreground font-normal select-none">
             / {formattedTotal}
@@ -51,7 +54,7 @@ export function CoverageCard({ total, mastered, seen, neverSeen }: CoverageProps
 
         {/* Breakdown Subtitle */}
         <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground select-none pt-0.5">
-          <span>{inProgress || 1} w trakcie</span>
+          <span>{formattedInProgress} w trakcie</span>
           <span>{formattedNever} nowe</span>
         </div>
       </CardContent>

@@ -188,3 +188,90 @@ def get_session_queue(
     # Apply domain interleaving
     interleaved = interleave_questions(session_candidates)
     return interleaved[:limit]
+
+
+def generate_exam_sheet(conn: sqlite3.Connection) -> Dict[str, Any]:
+    """
+    Generates a 32-question official exam simulation (20 basic + 12 specialized)
+    with total points and pass threshold 68 points.
+    """
+    cursor = conn.cursor()
+
+    def fetch_pool(scope: str, pts: int, cnt: int):
+        cursor.execute(
+            """
+            SELECT id, lp, scope, points, type, correct, media, media_kind, q_pl, a_pl, b_pl, c_pl, categories
+            FROM questions
+            WHERE scope = ? AND points = ? AND (status IS NULL OR status != 'pending') AND categories LIKE '%"B"%'
+            ORDER BY RANDOM()
+            LIMIT ?
+            """,
+            (scope, pts, cnt)
+        )
+        out = []
+        for r in cursor.fetchall():
+            d = dict(r)
+            d["categories"] = json.loads(d["categories"]) if d.get("categories") else []
+            out.append(d)
+        return out
+
+    # Basic: 10x3pt, 6x2pt, 4x1pt
+    b3 = fetch_pool("PODSTAWOWY", 3, 10)
+    b2 = fetch_pool("PODSTAWOWY", 2, 6)
+    b1 = fetch_pool("PODSTAWOWY", 1, 4)
+    basic_questions = b3 + b2 + b1
+
+    if len(basic_questions) < 20:
+        existing_ids = tuple(q["id"] for q in basic_questions) or (-1,)
+        placeholders = ",".join("?" for _ in existing_ids)
+        cursor.execute(
+            f"""
+            SELECT id, lp, scope, points, type, correct, media, media_kind, q_pl, a_pl, b_pl, c_pl, categories
+            FROM questions
+            WHERE scope = 'PODSTAWOWY' AND (status IS NULL OR status != 'pending') AND categories LIKE '%"B"%'
+              AND id NOT IN ({placeholders})
+            ORDER BY RANDOM()
+            LIMIT ?
+            """,
+            (*existing_ids, 20 - len(basic_questions))
+        )
+        for r in cursor.fetchall():
+            d = dict(r)
+            d["categories"] = json.loads(d["categories"]) if d.get("categories") else []
+            basic_questions.append(d)
+
+    # Specialized: 6x3pt, 4x2pt, 2x1pt
+    s3 = fetch_pool("SPECJALISTYCZNY", 3, 6)
+    s2 = fetch_pool("SPECJALISTYCZNY", 2, 4)
+    s1 = fetch_pool("SPECJALISTYCZNY", 1, 2)
+    spec_questions = s3 + s2 + s1
+
+    if len(spec_questions) < 12:
+        existing_ids = tuple(q["id"] for q in spec_questions) or (-1,)
+        placeholders = ",".join("?" for _ in existing_ids)
+        cursor.execute(
+            f"""
+            SELECT id, lp, scope, points, type, correct, media, media_kind, q_pl, a_pl, b_pl, c_pl, categories
+            FROM questions
+            WHERE scope = 'SPECJALISTYCZNY' AND (status IS NULL OR status != 'pending') AND categories LIKE '%"B"%'
+              AND id NOT IN ({placeholders})
+            ORDER BY RANDOM()
+            LIMIT ?
+            """,
+            (*existing_ids, 12 - len(spec_questions))
+        )
+        for r in cursor.fetchall():
+            d = dict(r)
+            d["categories"] = json.loads(d["categories"]) if d.get("categories") else []
+            spec_questions.append(d)
+
+    questions = basic_questions + spec_questions
+    return {
+        "questions": questions,
+        "basic_questions": basic_questions,
+        "spec_questions": spec_questions,
+        "total_questions": len(questions),
+        "max_score": 74,
+        "pass_threshold": 68
+    }
+

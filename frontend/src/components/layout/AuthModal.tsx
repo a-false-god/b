@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { User } from "@/types"
-import { LogIn, UserPlus, AlertCircle } from "lucide-react"
+import { AlertCircle } from "lucide-react"
 
 interface AuthModalProps {
   open: boolean
@@ -72,18 +72,49 @@ export function AuthModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px] rounded-[12px] border border-border bg-card modal-shadow p-5 sm:p-6">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
-            {mode === "login" ? <LogIn className="w-4 h-4 text-accent" /> : <UserPlus className="w-4 h-4 text-accent" />}
-            {mode === "login" ? "Logowanie" : "Rejestracja konta"}
+      <DialogContent hideCloseButton className="sm:max-w-[400px] rounded-[12px] border border-border bg-card modal-shadow p-6 sm:p-7">
+        <DialogHeader className="space-y-1 text-center sm:text-center">
+          {/* Wordmark: Mono uppercase spaced */}
+          <DialogTitle className="font-mono text-xs sm:text-sm font-bold tracking-[0.25em] text-foreground uppercase select-none text-center">
+            PRAWKO<span className="text-muted-foreground font-normal">//</span>B
           </DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground">
-            {mode === "login"
-              ? "Wprowadź dane, aby rejestrować odpowiedzi i budować model Rascha."
-              : "Utwórz konto w systemie — wszystkie sesje i postęp zostaną zapisane."}
+          {/* Subtitle */}
+          <DialogDescription className="text-xs text-muted-foreground text-center select-none">
+            Nauka na kat. B — z analizą błędów
           </DialogDescription>
         </DialogHeader>
+
+        {/* Segmented Control */}
+        <div className="grid grid-cols-2 p-1 bg-secondary/80 rounded-[8px] border border-border/50 mt-2">
+          <button
+            type="button"
+            onClick={() => {
+              setMode("login")
+              setError(null)
+            }}
+            className={`h-8 rounded-[6px] text-xs font-medium transition-all select-none ${
+              mode === "login"
+                ? "bg-card text-foreground font-semibold shadow-sm border border-border/40"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Logowanie
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("register")
+              setError(null)
+            }}
+            className={`h-8 rounded-[6px] text-xs font-medium transition-all select-none ${
+              mode === "register"
+                ? "bg-card text-foreground font-semibold shadow-sm border border-border/40"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Rejestracja
+          </button>
+        </div>
 
         {error && (
           <div className="flex items-center gap-2 p-3 rounded-[8px] bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
@@ -92,24 +123,24 @@ export function AuthModal({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+        <form onSubmit={handleSubmit} className="space-y-3.5 pt-1">
           <div className="space-y-1">
-            <label className="text-[11px] font-mono font-semibold uppercase tracking-wider text-muted-foreground block select-none">
+            <label className="text-[11px] text-muted-foreground block select-none font-normal">
               Login
             </label>
             <Input
               type="text"
-              placeholder="np. kierowca_123"
+              placeholder="np. mike"
               value={login}
               onChange={(e) => setLogin(e.target.value)}
               disabled={loading}
-              className="rounded-[8px] h-9 text-xs font-mono"
+              className="rounded-[8px] h-10 text-xs sm:text-sm font-sans bg-card border-input"
               autoFocus
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] font-mono font-semibold uppercase tracking-wider text-muted-foreground block select-none">
+            <label className="text-[11px] text-muted-foreground block select-none font-normal">
               Hasło
             </label>
             <Input
@@ -118,35 +149,27 @@ export function AuthModal({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
-              className="rounded-[8px] h-9 text-xs font-mono"
+              className="rounded-[8px] h-10 text-xs sm:text-sm font-sans bg-card border-input"
             />
           </div>
 
-          <div className="flex flex-col gap-2 pt-2">
+          <div className="pt-2 space-y-3">
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary text-primary-foreground hover:opacity-90 font-semibold rounded-[8px] h-9 text-xs font-mono"
+              className="w-full bg-primary text-primary-foreground hover:opacity-90 font-semibold rounded-[8px] h-10 text-xs sm:text-sm font-sans transition-opacity select-none"
             >
               {loading
                 ? "Przetwarzanie..."
                 : mode === "login"
                 ? "Zaloguj się"
-                : "Zarejestruj"}
+                : "Utwórz konto"}
             </Button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setMode(mode === "login" ? "register" : "login")
-                setError(null)
-              }}
-              className="text-xs text-muted-foreground hover:text-foreground text-center pt-1 transition-colors font-mono"
-            >
-              {mode === "login"
-                ? "Nie masz jeszcze konta? Zarejestruj się"
-                : "Masz już konto? Zaloguj się"}
-            </button>
+            {/* Quiet Footer Note */}
+            <div className="text-[10px] font-mono tracking-[0.2em] text-faint uppercase text-center pt-1 select-none">
+              localhost · konto lokalne
+            </div>
           </div>
         </form>
       </DialogContent>

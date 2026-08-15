@@ -68,9 +68,29 @@ def test_migration_005_schema_and_check_constraint():
     cursor.execute("DELETE FROM question_classification WHERE question_id = ?", (test_qid,))
     conn.commit()
 
-    # Verify vision_review table exists
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='vision_review'")
-    assert cursor.fetchone() is not None
+    # Verify vision_review table exists and supports decision='manual_accepted'
+    cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='vision_review'")
+    vr_row = cursor.fetchone()
+    assert vr_row is not None
+    assert "'manual_accepted'" in vr_row["sql"]
+
+    # Verify inserting decision='manual_accepted' works
+    cursor.execute("""
+        INSERT OR REPLACE INTO vision_review (
+            question_id, model, n_frames, suggested_axis_a, suggested_axis_b,
+            suggested_axis_c, confidence, rationale, decision
+        )
+        VALUES (?, 'gemini-2.5-flash', 1, 'zastosowanie', 'znaki_i_sygnaly', 'brak_pulapki', 1.0, 'Manual triage test', 'manual_accepted')
+    """, (test_qid,))
+    conn.commit()
+
+    cursor.execute("SELECT decision FROM vision_review WHERE question_id = ?", (test_qid,))
+    vr_inserted = cursor.fetchone()
+    assert vr_inserted["decision"] == "manual_accepted"
+
+    # Clean up test row
+    cursor.execute("DELETE FROM vision_review WHERE question_id = ?", (test_qid,))
+    conn.commit()
     conn.close()
 
 

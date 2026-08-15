@@ -112,6 +112,7 @@ def run_vision_audit():
     print("----------------------------------------------------------------")
     print("ROZKŁAD DECYZJI VISION PASS:")
     print(f" - Auto-Accepted (Zgodność -> conf 0.9):  {decisions.get('auto_accepted', 0):>5} ({(decisions.get('auto_accepted', 0)/total_media_questions*100):.1f}%)")
+    print(f" - Manual-Accepted (Ręczna akceptacja):   {decisions.get('manual_accepted', 0):>5} ({(decisions.get('manual_accepted', 0)/total_media_questions*100):.1f}%)")
     print(f" - Auto-Corrected (Korekta -> vision):    {decisions.get('auto_corrected', 0):>5} ({(decisions.get('auto_corrected', 0)/total_media_questions*100):.1f}%)")
     print(f" - Queued (Niepewne / Manual-Hold):       {decisions.get('queued', 0):>5} ({(decisions.get('queued', 0)/total_media_questions*100):.1f}%)")
     print(f" - Skipped (Brak pliku na dysku):        {decisions.get('skipped_no_media', 0):>5} ({(decisions.get('skipped_no_media', 0)/total_media_questions*100):.1f}%)")

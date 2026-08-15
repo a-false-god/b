@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { formatCount } from "@/lib/utils"
 
 interface RepeatsDueCardProps {
   repeatsDue: number
@@ -18,7 +19,7 @@ export function RepeatsDueCard({ repeatsDue, onStartReview }: RepeatsDueCardProp
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl sm:text-3xl font-mono font-bold text-foreground tabular-nums leading-none">
-              {count || 2}
+              {formatCount(count || 2)}
             </span>
             <span className="text-xs text-muted-foreground select-none">
               pytania do powtórki

@@ -15,6 +15,7 @@ interface HeaderProps {
 export function Header({
   user,
   onLogout,
+  onOpenExam,
   theme,
   onToggleTheme,
   onLogoClick,
@@ -34,8 +35,17 @@ export function Header({
           </span>
         </div>
 
-        {/* Right: Streak + Theme switch */}
+        {/* Right: Sprawdzian + Streak + Theme switch */}
         <div className="flex items-center gap-2">
+          {/* Sprawdzian button */}
+          <button
+            onClick={onOpenExam}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-accent/10 border border-accent/30 text-accent text-xs font-mono select-none hover:bg-accent/20 transition-colors"
+            title="Sprawdzian Gotowości (32 pytania)"
+          >
+            <span>Sprawdzian</span>
+          </button>
+
           {/* Streak indicator */}
           <div
             className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-secondary/50 border border-border text-xs font-mono select-none"
