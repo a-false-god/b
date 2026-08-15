@@ -24,10 +24,17 @@ export default {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+          soft: "hsl(var(--destructive-soft))",
         },
         success: {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
+          soft: "hsl(var(--success-soft))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+          soft: "hsl(var(--warning-soft))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -37,6 +44,7 @@ export default {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          soft: "hsl(var(--accent-soft))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -46,6 +54,20 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+      },
+      fontSize: {
+        "type-question": ["1.4375rem", { lineHeight: "1.3", letterSpacing: "-0.015em", fontWeight: "700" }],
+        "type-title": ["1.125rem", { lineHeight: "1.3", letterSpacing: "-0.015em", fontWeight: "600" }],
+        "type-body": ["0.875rem", { lineHeight: "1.45", fontWeight: "400" }],
+        "type-ui": ["0.8125rem", { lineHeight: "1.25", fontWeight: "500" }],
+        "type-data": ["0.75rem", { lineHeight: "1.25", fontWeight: "600" }],
+        "type-caption": ["0.6875rem", { lineHeight: "1.2", fontWeight: "400" }],
+      },
+      transitionDuration: {
+        instant: "80ms",
+        fast: "120ms",
+        base: "160ms",
+        slow: "200ms",
       },
       borderRadius: {
         xl: "18px",
@@ -60,25 +82,20 @@ export default {
       },
       keyframes: {
         "fade-in-up": {
-          "0%": { opacity: "0", transform: "translateY(4px)" },
+          "0%": { opacity: "0", transform: "translateY(2px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         "slide-down": {
-          "0%": { opacity: "0", transform: "translateY(-4px)" },
+          "0%": { opacity: "0", transform: "translateY(-2px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-        "confirm-pop": {
-          "0%": { transform: "scale(0.98)" },
-          "50%": { transform: "scale(1.008)" },
-          "100%": { transform: "scale(1)" },
         },
       },
       animation: {
-        "fade-in-up": "fade-in-up 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
-        "slide-down": "slide-down 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
-        "confirm-pop": "confirm-pop 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "fade-in-up": "fade-in-up 120ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "slide-down": "slide-down 160ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
       },
     },
   },
   plugins: [],
 }
+

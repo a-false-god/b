@@ -22,7 +22,7 @@ export function Header({
   streakDays = 3,
 }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/90 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/90 backdrop-blur-md xl:hidden">
       <div className="max-w-[560px] mx-auto px-4 h-11 sm:h-12 flex items-center justify-between gap-3">
         {/* Wordmark: Mono "PRAWKO//B" */}
         <div

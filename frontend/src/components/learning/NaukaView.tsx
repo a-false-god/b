@@ -7,6 +7,8 @@ import { useHotkeys } from "@/hooks/useHotkeys"
 import { useTouchSwipe } from "@/hooks/useTouchSwipe"
 import { ArrowLeft, ArrowRight, Lightbulb, Loader2, SlidersHorizontal } from "lucide-react"
 
+import { ProgressHairline } from "@/components/ui/progress-hairline"
+
 interface NaukaViewProps {
   user: User | null
   onOpenAuth: (message?: string) => void
@@ -34,6 +36,7 @@ export function NaukaView({ user, onOpenAuth, onAnswerSubmitted }: NaukaViewProp
 
   const startTimeRef = useRef<number>(Date.now())
   const sessionIdRef = useRef<string>("sess_" + Math.random().toString(36).substring(2, 10))
+  const headingRef = useRef<HTMLHeadingElement>(null)
 
   // Fetch questions
   const loadQuestions = useCallback(async () => {
@@ -136,6 +139,7 @@ export function NaukaView({ user, onOpenAuth, onAnswerSubmitted }: NaukaViewProp
       setChosenOption(null)
       setAnswerResult(null)
       startTimeRef.current = Date.now()
+      headingRef.current?.focus()
     }
   }, [currentIndex])
 
@@ -146,6 +150,7 @@ export function NaukaView({ user, onOpenAuth, onAnswerSubmitted }: NaukaViewProp
       setChosenOption(null)
       setAnswerResult(null)
       startTimeRef.current = Date.now()
+      headingRef.current?.focus()
     }
   }, [currentIndex, questions.length])
 
@@ -166,20 +171,19 @@ export function NaukaView({ user, onOpenAuth, onAnswerSubmitted }: NaukaViewProp
     onSwipeRight: handlePrev,
   })
 
-  const progressPercent = questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0
-
   return (
     <div className="space-y-4 animate-fade-in-up pb-8">
-      {/* 1. Ritual Session Row: "SESJA" micro-caps + 3px progress track (accent fill) + "1/20" mono */}
+      {/* 1. Ritual Session Row: "SESJA" micro-caps + 2px ProgressHairline + "1/20" mono */}
       <div className="flex items-center gap-3 px-1 py-1">
         <span className="text-[10px] font-mono font-bold tracking-widest text-muted-foreground uppercase select-none">
           SESJA
         </span>
 
-        <div className="h-[3px] bg-secondary/80 rounded-full overflow-hidden flex-1 relative">
-          <div
-            className="h-full bg-accent rounded-full transition-all duration-300 ease-out"
-            style={{ width: `${progressPercent}%` }}
+        <div className="flex-1">
+          <ProgressHairline
+            value={currentIndex + 1}
+            max={Math.max(1, questions.length)}
+            label={`Pytanie ${currentIndex + 1} z ${questions.length}`}
           />
         </div>
 
@@ -200,6 +204,7 @@ export function NaukaView({ user, onOpenAuth, onAnswerSubmitted }: NaukaViewProp
           </button>
         </div>
       </div>
+
 
       {/* Mode / Filters Drawer (Collapsible) */}
       {showFilters && (
@@ -310,6 +315,7 @@ export function NaukaView({ user, onOpenAuth, onAnswerSubmitted }: NaukaViewProp
           answerResult={answerResult}
           showExplanation={showExplanation}
           onSelectOption={handleSelectOption}
+          headingRef={headingRef}
         />
       ) : (
         <div className="w-full p-12 rounded-[12px] border border-border bg-card text-center space-y-2">

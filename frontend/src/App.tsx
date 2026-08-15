@@ -3,6 +3,7 @@ import { useLocation } from "wouter"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { User } from "@/types"
 import { Header } from "@/components/layout/Header"
+import { Sidebar } from "@/components/layout/Sidebar"
 import { BottomTabBar } from "@/components/layout/BottomTabBar"
 import { AuthModal } from "@/components/layout/AuthModal"
 import { DashboardView } from "@/components/dashboard/DashboardView"
@@ -11,6 +12,7 @@ import { AnalyticsView } from "@/components/analytics/AnalyticsView"
 import { ReviewQueueView } from "@/components/review/ReviewQueueView"
 import { ExamDialog } from "@/components/exam/ExamDialog"
 import { ErrorBoundary } from "@/components/common/ErrorBoundary"
+import { ToastProvider } from "@/components/ui/toast"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -101,73 +103,92 @@ export function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen flex flex-col bg-background text-foreground ambient-shell selection:bg-accent selection:text-accent-foreground">
-        {/* Minimal Ritual Header */}
-        <Header
-          user={user}
-          onOpenAuth={() => handleOpenAuth()}
-          onLogout={handleLogout}
-          onOpenExam={() => setExamOpen(true)}
-          theme={theme}
-          onToggleTheme={toggleTheme}
-          onLogoClick={() => handleTabChange("dashboard")}
-          streakDays={3}
-        />
+      <ToastProvider>
+        <div className="min-h-screen flex flex-col bg-background text-foreground ambient-shell selection:bg-accent selection:text-accent-foreground">
+          {/* Desktop Fixed Left Sidebar (≥1200px) */}
+          <Sidebar
+            currentTab={currentTab}
+            onTabChange={handleTabChange}
+            user={user}
+            onOpenAuth={() => handleOpenAuth()}
+            onLogout={handleLogout}
+            onOpenExam={() => setExamOpen(true)}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            streakDays={3}
+          />
 
-        {/* Main Content Area — Centered 480–540px column */}
-        <main className="flex-1 w-full max-w-[540px] mx-auto px-3.5 sm:px-4 py-2 sm:py-3 pb-20 sm:pb-24">
-          <ErrorBoundary>
-            {currentTab === "dashboard" && (
-              <DashboardView
-                user={user}
-                onOpenAuth={() => handleOpenAuth()}
-                onNavigateToNauka={() => handleTabChange("nauka")}
-                onOpenExam={() => setExamOpen(true)}
-              />
-            )}
+          {/* Minimal Mobile/Tablet Header (<1200px) */}
+          <Header
+            user={user}
+            onOpenAuth={() => handleOpenAuth()}
+            onLogout={handleLogout}
+            onOpenExam={() => setExamOpen(true)}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            onLogoClick={() => handleTabChange("dashboard")}
+            streakDays={3}
+          />
 
-            {currentTab === "nauka" && (
-              <NaukaView
-                user={user}
-                onOpenAuth={handleOpenAuth}
-                onAnswerSubmitted={() => queryClient.invalidateQueries({ queryKey: ["dashboard"] })}
-              />
-            )}
+          {/* Main Content Area — Centered 480–540px column (offset by sidebar on desktop) */}
+          <main className="flex-1 w-full max-w-[540px] mx-auto xl:max-w-[756px] xl:pl-[216px] px-3.5 sm:px-4 py-2 sm:py-3 pb-20 sm:pb-24 xl:pb-8">
+            <div className="w-full max-w-[540px] mx-auto">
+              <ErrorBoundary>
+                {currentTab === "dashboard" && (
+                  <DashboardView
+                    user={user}
+                    onOpenAuth={() => handleOpenAuth()}
+                    onNavigateToNauka={() => handleTabChange("nauka")}
+                    onOpenExam={() => setExamOpen(true)}
+                  />
+                )}
 
-            {currentTab === "analiza" && (
-              <AnalyticsView
-                user={user}
-                onOpenAuth={() => handleOpenAuth()}
-              />
-            )}
+                {currentTab === "nauka" && (
+                  <NaukaView
+                    user={user}
+                    onOpenAuth={handleOpenAuth}
+                    onAnswerSubmitted={() => queryClient.invalidateQueries({ queryKey: ["dashboard"] })}
+                  />
+                )}
 
-            {currentTab === "review" && <ReviewQueueView />}
-          </ErrorBoundary>
-        </main>
+                {currentTab === "analiza" && (
+                  <AnalyticsView
+                    user={user}
+                    onOpenAuth={() => handleOpenAuth()}
+                  />
+                )}
 
+                {currentTab === "review" && <ReviewQueueView />}
+              </ErrorBoundary>
+            </div>
+          </main>
 
-        {/* Floating Bottom Tab Bar */}
-        <BottomTabBar
-          currentTab={currentTab}
-          onTabChange={handleTabChange}
-        />
+          {/* Floating Bottom Tab Bar (<1200px, hidden during exam takeover) */}
+          {!examOpen && (
+            <BottomTabBar
+              currentTab={currentTab}
+              onTabChange={handleTabChange}
+            />
+          )}
 
-        {/* Auth Modal */}
-        <AuthModal
-          open={authModalOpen}
-          onOpenChange={setAuthModalOpen}
-          onSuccess={(u) => setUser(u)}
-          initialMessage={authMessage}
-        />
+          {/* Auth Modal */}
+          <AuthModal
+            open={authModalOpen}
+            onOpenChange={setAuthModalOpen}
+            onSuccess={(u) => setUser(u)}
+            initialMessage={authMessage}
+          />
 
-        {/* Exam Check Modal */}
-        <ExamDialog
-          open={examOpen}
-          onOpenChange={setExamOpen}
-          onExamFinished={() => queryClient.invalidateQueries({ queryKey: ["dashboard"] })}
-        />
-      </div>
+          {/* Fullscreen Exam Check Modal */}
+          <ExamDialog
+            open={examOpen}
+            onOpenChange={setExamOpen}
+            onExamFinished={() => queryClient.invalidateQueries({ queryKey: ["dashboard"] })}
+          />
+        </div>
+      </ToastProvider>
     </QueryClientProvider>
   )
 }
+
 export default App

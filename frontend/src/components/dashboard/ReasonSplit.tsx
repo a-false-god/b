@@ -22,7 +22,7 @@ export function ReasonSplit({ slips, mistakes, uncertainty }: ReasonSplitProps) 
           {/* Pośpiech */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-warning shrink-0" />
               <span className="text-foreground font-sans font-normal text-xs">Pośpiech</span>
             </div>
             <span className="font-mono font-bold text-foreground tabular-nums">{safeSlips}</span>

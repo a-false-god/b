@@ -229,6 +229,17 @@ def test_visual_regression_surfaces(e2e_server, theme, vp_name, vp_size, request
             content_type="application/json",
             body=json.dumps(MOCK_ANSWER_RESPONSE)
         ))
+        page.route("**/api/exam/start*", lambda route: route.fulfill(
+            status=200,
+            content_type="application/json",
+            body=json.dumps({
+                "questions": [MOCK_QUESTION],
+                "total_questions": 32,
+                "max_score": 74,
+                "pass_threshold": 68
+            })
+        ))
+
 
         def apply_theme():
             page.evaluate(f"""(th) => {{
@@ -283,11 +294,12 @@ def test_visual_regression_surfaces(e2e_server, theme, vp_name, vp_size, request
         page.goto(f"{e2e_server}/", wait_until="networkidle")
         apply_theme()
         page.wait_for_timeout(300)
-        exam_btn = page.locator("button:has-text('Sprawdzian'), button:has-text('Egzamin')").first
+        exam_btn = page.locator("button:has-text('Sprawdzian'):visible, button:has-text('Egzamin'):visible").first
         if exam_btn.is_visible():
             exam_btn.click()
-            page.wait_for_timeout(400)
+            page.wait_for_timeout(500)
         assert_or_update_baseline(page, "exam_modal", theme, vp_name, request=request)
+
 
 
         context.close()

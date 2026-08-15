@@ -66,11 +66,22 @@ def test_static_css_token_definitions_root_and_dark():
     root_vars = extract_variables(root_block)
     dark_vars = extract_variables(dark_block)
 
-    # Specific guard for the --foreground incident
-    assert "--foreground" in root_vars, "--foreground missing from :root in index.css"
-    assert "--foreground" in dark_vars, "--foreground missing from .dark in index.css"
-    assert "--background" in root_vars, "--background missing from :root in index.css"
-    assert "--background" in dark_vars, "--background missing from .dark in index.css"
+    # Specific guard for core and semantic tokens
+    for tok in [
+        "--foreground",
+        "--background",
+        "--faint",
+        "--accent",
+        "--accent-soft",
+        "--destructive",
+        "--destructive-soft",
+        "--success",
+        "--success-soft",
+        "--warning",
+        "--warning-soft",
+    ]:
+        assert tok in root_vars, f"{tok} missing from :root in index.css"
+        assert tok in dark_vars, f"{tok} missing from .dark in index.css"
 
     # Verify all var(--...) usages are defined in both scopes
     used_vars = extract_variable_usages(content)
@@ -79,6 +90,7 @@ def test_static_css_token_definitions_root_and_dark():
 
     assert not missing_in_root, f"CSS variables used via var() but missing in :root: {missing_in_root}"
     assert not missing_in_dark, f"CSS variables used via var() but missing in .dark: {missing_in_dark}"
+
 
 
 # ==============================================================================

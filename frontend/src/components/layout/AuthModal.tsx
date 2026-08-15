@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { FormField } from "@/components/ui/form-field"
 import { User } from "@/types"
 import { AlertCircle } from "lucide-react"
 
@@ -117,18 +118,16 @@ export function AuthModal({
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 p-3 rounded-[8px] bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
+          <div className="flex items-center gap-2 p-3 rounded-[8px] bg-destructive-soft border border-destructive/30 text-destructive text-xs font-medium animate-slide-down">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-3.5 pt-1">
-          <div className="space-y-1">
-            <label className="text-[11px] text-muted-foreground block select-none font-normal">
-              Login
-            </label>
+          <FormField label="Login" htmlFor="auth-login">
             <Input
+              id="auth-login"
               type="text"
               placeholder="np. mike"
               value={login}
@@ -137,13 +136,11 @@ export function AuthModal({
               className="rounded-[8px] h-10 text-xs sm:text-sm font-sans bg-card border-input"
               autoFocus
             />
-          </div>
+          </FormField>
 
-          <div className="space-y-1">
-            <label className="text-[11px] text-muted-foreground block select-none font-normal">
-              Hasło
-            </label>
+          <FormField label="Hasło" htmlFor="auth-password">
             <Input
+              id="auth-password"
               type="password"
               placeholder="••••••••"
               value={password}
@@ -151,7 +148,7 @@ export function AuthModal({
               disabled={loading}
               className="rounded-[8px] h-10 text-xs sm:text-sm font-sans bg-card border-input"
             />
-          </div>
+          </FormField>
 
           <div className="pt-2 space-y-3">
             <Button

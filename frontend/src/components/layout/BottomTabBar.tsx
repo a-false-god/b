@@ -16,7 +16,7 @@ export function BottomTabBar({ currentTab, onTabChange }: BottomTabBarProps) {
   return (
     <nav
       aria-label="Główna nawigacja"
-      className="fixed bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-1.5rem)] max-w-[480px] z-50 rounded-[18px] bg-card/95 backdrop-blur-md tab-bar-shadow border border-border px-1.5 py-1.5 flex items-center justify-between transition-all"
+      className="fixed bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-1.5rem)] max-w-[480px] z-50 rounded-[18px] bg-card/95 backdrop-blur-md tab-bar-shadow border border-border px-1.5 py-1.5 flex items-center justify-between transition-all xl:hidden"
     >
       {tabs.map((tab) => {
         const Icon = tab.icon

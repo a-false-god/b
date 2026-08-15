@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react"
-import { Lightbulb, Scale, Loader2 } from "lucide-react"
+import { Scale } from "lucide-react"
 
 interface ExplanationCardProps {
   questionId: number
+  isCorrect?: boolean | null
   explanation?: string | null
   legalBasis?: string | null
   pending?: boolean
@@ -64,6 +65,7 @@ function FormattedMarkdown({ content, className }: { content: string; className?
 
 export function ExplanationCard({
   questionId,
+  isCorrect,
   explanation: initialExplanation,
   legalBasis: initialLegalBasis,
   pending: initialPending,
@@ -123,12 +125,23 @@ export function ExplanationCard({
   }
 
   return (
-    <div className="mt-3.5 rounded-[12px] border border-border bg-secondary/40 p-3.5 sm:p-4 space-y-2.5 animate-slide-down">
-      {/* Title & Badge */}
-      <div className="flex items-center justify-between text-xs font-mono font-semibold text-foreground tracking-wide select-none">
-        <div className="flex items-center gap-1.5">
-          <Lightbulb className="w-3.5 h-3.5 text-accent shrink-0" />
-          <span>Wyjaśnienie</span>
+    <div className="rounded-[12px] border border-border bg-secondary/40 p-3.5 sm:p-4 space-y-2.5 animate-slide-down">
+      {/* Title with Verbal Verdict: "Dobrze." / "Nie tym razem." */}
+      <div className="flex items-center justify-between text-xs font-mono font-semibold tracking-wide select-none">
+        <div className="flex items-center gap-2">
+          {isCorrect === true ? (
+            <span className="text-success font-bold font-sans text-sm sm:text-base">
+              Dobrze.
+            </span>
+          ) : isCorrect === false ? (
+            <span className="text-destructive font-bold font-sans text-sm sm:text-base">
+              Nie tym razem.
+            </span>
+          ) : (
+            <span className="font-semibold font-sans text-foreground text-sm">
+              Wyjaśnienie
+            </span>
+          )}
         </div>
         <span className="text-[10px] text-muted-foreground uppercase font-mono px-1.5 py-0.5 rounded-[6px] border border-border bg-background/50">
           Klawisz E
@@ -136,15 +149,17 @@ export function ExplanationCard({
       </div>
 
       {isPending ? (
-        <div className="flex items-center gap-2 py-2.5 text-xs text-muted-foreground font-mono">
-          <Loader2 className="w-4 h-4 animate-spin text-accent" />
-          <span>Generowanie precyzyjnego objaśnienia i podstawy prawnej...</span>
+        /* Reserved static skeleton per spec §3.3: 2-3 static lines, NO shimmer */
+        <div className="space-y-2 py-1 select-none" aria-busy="true" aria-label="Wczytywanie objaśnienia">
+          <div className="h-3.5 w-full bg-secondary/80 rounded" />
+          <div className="h-3.5 w-11/12 bg-secondary/80 rounded" />
+          <div className="h-3.5 w-3/4 bg-secondary/70 rounded" />
         </div>
       ) : (
         <>
           <FormattedMarkdown
             content={explanation || ""}
-            className="text-xs sm:text-sm text-foreground/90 font-normal space-y-1.5"
+            className="text-type-body text-foreground/90 font-normal space-y-1.5"
           />
 
           {legalBasis && (
@@ -153,7 +168,7 @@ export function ExplanationCard({
                 <Scale className="w-3 h-3 text-muted-foreground" />
                 <span>Podstawa Prawna</span>
               </div>
-              <div className="text-xs font-mono text-muted-foreground bg-background/80 p-2 rounded-[8px] border border-border leading-normal">
+              <div className="text-type-data font-mono text-muted-foreground bg-background/80 p-2 rounded-[8px] border border-border leading-normal">
                 <FormattedMarkdown content={legalBasis} className="space-y-1" />
               </div>
             </div>
