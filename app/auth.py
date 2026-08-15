@@ -1,12 +1,15 @@
 """
 Authentication & Session Management for Prawko B MVP.
 Uses Argon2id hashing (with PBKDF2 fallback) and encrypted/signed session cookies.
+Includes anti-enumeration timing equalization, in-memory IP rate limiting, and session rotation.
 """
 
 import base64
+import collections
 import hashlib
 import secrets
-from typing import Optional
+import time
+from typing import Optional, Dict, List
 from fastapi import Request, Response, HTTPException, status
 
 try:
@@ -18,6 +21,12 @@ except ImportError:
 
 SESSIONS: dict[str, int] = {}
 SESSION_COOKIE_NAME = "prawko_session"
+SESSION_MAX_AGE = 86400 * 30  # 30 days
+
+# Rate limiting config
+RATE_LIMIT_MAX_ATTEMPTS = 5
+RATE_LIMIT_WINDOW_SECONDS = 60.0
+_IP_ATTEMPT_LOG: Dict[str, List[float]] = collections.defaultdict(list)
 
 
 def hash_password(password: str) -> str:
@@ -28,6 +37,10 @@ def hash_password(password: str) -> str:
     salt = secrets.token_bytes(16)
     key = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 100_000)
     return "pbkdf2:" + base64.b64encode(salt + key).decode("ascii")
+
+
+# Pre-computed dummy hash to equalize timing on non-existent users
+_DUMMY_HASH = hash_password("prawko_dummy_timing_salt_string_12345")
 
 
 def verify_password(password: str, stored_hash: str) -> bool:
@@ -49,8 +62,60 @@ def verify_password(password: str, stored_hash: str) -> bool:
         return False
 
 
-def create_session(user_id: int, response: Response) -> str:
-    """Create a new session token and set HTTP-only cookie."""
+def verify_password_or_dummy(password: str, stored_hash: Optional[str]) -> bool:
+    """
+    Constant-time password verification helper.
+    If stored_hash is None (user does not exist), executes hash verification against
+    a dummy hash to protect against timing-based user enumeration.
+    """
+    if stored_hash is None:
+        verify_password(password, _DUMMY_HASH)
+        return False
+    return verify_password(password, stored_hash)
+
+
+def check_rate_limit(request: Request, action: str = "auth"):
+    """
+    In-memory IP rate limiter. Allows max 5 attempts per minute per IP.
+    Raises HTTPException 429 when limit exceeded.
+    """
+    client_ip = "unknown"
+    if request.client and request.client.host:
+        client_ip = request.client.host
+
+    key = f"{action}:{client_ip}"
+    now = time.time()
+    cutoff = now - RATE_LIMIT_WINDOW_SECONDS
+
+    # Filter timestamps within window
+    timestamps = [t for t in _IP_ATTEMPT_LOG[key] if t > cutoff]
+    if len(timestamps) >= RATE_LIMIT_MAX_ATTEMPTS:
+        _IP_ATTEMPT_LOG[key] = timestamps
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many authentication attempts. Please try again in a minute."
+        )
+
+    timestamps.append(now)
+    _IP_ATTEMPT_LOG[key] = timestamps
+
+
+def reset_rate_limits():
+    """Helper for test suites to reset rate limit logs."""
+    _IP_ATTEMPT_LOG.clear()
+
+
+def create_session(user_id: int, response: Response, request: Optional[Request] = None) -> str:
+    """
+    Create a new session token and set HTTP-only cookie.
+    Rotates session ID if a prior session token exists in request cookies.
+    """
+    # Rotate session: invalidate old session token if present
+    if request:
+        old_token = request.cookies.get(SESSION_COOKIE_NAME)
+        if old_token and old_token in SESSIONS:
+            del SESSIONS[old_token]
+
     token = secrets.token_urlsafe(32)
     SESSIONS[token] = user_id
     response.set_cookie(
@@ -58,7 +123,7 @@ def create_session(user_id: int, response: Response) -> str:
         value=token,
         httponly=True,
         samesite="lax",
-        max_age=86400 * 30  # 30 days
+        max_age=SESSION_MAX_AGE
     )
     return token
 

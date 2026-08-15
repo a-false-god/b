@@ -9,10 +9,19 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel
 
 from app.db import get_db_connection
-from app.auth import hash_password, verify_password, create_session, get_current_user_id, require_user_id, destroy_session
+from app.auth import (
+    hash_password,
+    verify_password,
+    verify_password_or_dummy,
+    check_rate_limit,
+    create_session,
+    get_current_user_id,
+    require_user_id,
+    destroy_session,
+)
 from app.config import SLIP_THRESHOLD_MS, HESITATION_THRESHOLD_MS, LOW_CONFIDENCE_THRESHOLD, SKILL_INIT, SKILL_LR0, DIFF_ALPHA, DIFF_BETA
 from app.skill import calc_question_difficulty, calc_skill_update
-from app.session import get_session_queue
+from app.session import get_session_queue, generate_exam_sheet
 from scripts.generate_explanations import generate_explanation_for_question
 import math
 
@@ -41,11 +50,42 @@ class ClassificationReviewRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Health Check Endpoint
+# ---------------------------------------------------------------------------
+
+@router.get("/healthz")
+def healthz():
+    """
+    Unauthenticated health check returning system status, DB state, and questions count.
+    """
+    db_ok = False
+    questions_count = 0
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM questions")
+        row = cursor.fetchone()
+        if row:
+            questions_count = row[0]
+            db_ok = True
+        conn.close()
+    except Exception:
+        db_ok = False
+
+    return {
+        "status": "ok" if db_ok else "degraded",
+        "db_ok": db_ok,
+        "questions_count": questions_count
+    }
+
+
+# ---------------------------------------------------------------------------
 # Authentication Endpoints
 # ---------------------------------------------------------------------------
 
 @router.post("/auth/register")
-def register(req: UserAuthRequest, response: Response):
+def register(req: UserAuthRequest, request: Request, response: Response):
+    check_rate_limit(request, action="auth_register")
     login = req.login.strip()
     if not login or not req.password:
         raise HTTPException(status_code=400, detail="Login and password required")
@@ -64,12 +104,13 @@ def register(req: UserAuthRequest, response: Response):
     user_id = cursor.lastrowid
     conn.close()
 
-    create_session(user_id, response)
+    create_session(user_id, response, request=request)
     return {"user_id": user_id, "login": login}
 
 
 @router.post("/auth/login")
-def login(req: UserAuthRequest, response: Response):
+def login(req: UserAuthRequest, request: Request, response: Response):
+    check_rate_limit(request, action="auth_login")
     login = req.login.strip()
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -78,12 +119,14 @@ def login(req: UserAuthRequest, response: Response):
     row = cursor.fetchone()
     conn.close()
 
-    if not row or not verify_password(req.password, row["password_hash"]):
+    stored_hash = row["password_hash"] if row else None
+    if not verify_password_or_dummy(req.password, stored_hash) or not row:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     user_id = row["id"]
-    create_session(user_id, response)
+    create_session(user_id, response, request=request)
     return {"user_id": user_id, "login": login}
+
 
 
 @router.post("/auth/logout")
@@ -918,85 +961,17 @@ def start_exam_check(request: Request):
     """
     user_id = require_user_id(request)
     conn = get_db_connection()
-    cursor = conn.cursor()
+    try:
+        exam_data = generate_exam_sheet(conn)
+        return {
+            "questions": exam_data["questions"],
+            "total_questions": exam_data["total_questions"],
+            "max_score": exam_data["max_score"],
+            "pass_threshold": exam_data["pass_threshold"]
+        }
+    finally:
+        conn.close()
 
-    def fetch_pool(scope: str, pts: int, cnt: int):
-        cursor.execute(
-            """
-            SELECT id, lp, scope, points, type, correct, media, media_kind, q_pl, a_pl, b_pl, c_pl, categories
-            FROM questions
-            WHERE scope = ? AND points = ? AND (status IS NULL OR status != 'pending') AND categories LIKE '%"B"%'
-            ORDER BY RANDOM()
-            LIMIT ?
-            """,
-            (scope, pts, cnt)
-        )
-        out = []
-        for r in cursor.fetchall():
-            d = dict(r)
-            d["categories"] = json.loads(d["categories"]) if d.get("categories") else []
-            out.append(d)
-        return out
-
-    # Basic: 10x3pt, 6x2pt, 4x1pt
-    b3 = fetch_pool("PODSTAWOWY", 3, 10)
-    b2 = fetch_pool("PODSTAWOWY", 2, 6)
-    b1 = fetch_pool("PODSTAWOWY", 1, 4)
-    basic_questions = b3 + b2 + b1
-
-    if len(basic_questions) < 20:
-        existing_ids = tuple(q["id"] for q in basic_questions) or (-1,)
-        placeholders = ",".join("?" for _ in existing_ids)
-        cursor.execute(
-            f"""
-            SELECT id, lp, scope, points, type, correct, media, media_kind, q_pl, a_pl, b_pl, c_pl, categories
-            FROM questions
-            WHERE scope = 'PODSTAWOWY' AND (status IS NULL OR status != 'pending') AND categories LIKE '%"B"%'
-              AND id NOT IN ({placeholders})
-            ORDER BY RANDOM()
-            LIMIT ?
-            """,
-            (*existing_ids, 20 - len(basic_questions))
-        )
-        for r in cursor.fetchall():
-            d = dict(r)
-            d["categories"] = json.loads(d["categories"]) if d.get("categories") else []
-            basic_questions.append(d)
-
-    # Specialized: 6x3pt, 4x2pt, 2x1pt
-    s3 = fetch_pool("SPECJALISTYCZNY", 3, 6)
-    s2 = fetch_pool("SPECJALISTYCZNY", 2, 4)
-    s1 = fetch_pool("SPECJALISTYCZNY", 1, 2)
-    spec_questions = s3 + s2 + s1
-
-    if len(spec_questions) < 12:
-        existing_ids = tuple(q["id"] for q in spec_questions) or (-1,)
-        placeholders = ",".join("?" for _ in existing_ids)
-        cursor.execute(
-            f"""
-            SELECT id, lp, scope, points, type, correct, media, media_kind, q_pl, a_pl, b_pl, c_pl, categories
-            FROM questions
-            WHERE scope = 'SPECJALISTYCZNY' AND (status IS NULL OR status != 'pending') AND categories LIKE '%"B"%'
-              AND id NOT IN ({placeholders})
-            ORDER BY RANDOM()
-            LIMIT ?
-            """,
-            (*existing_ids, 12 - len(spec_questions))
-        )
-        for r in cursor.fetchall():
-            d = dict(r)
-            d["categories"] = json.loads(d["categories"]) if d.get("categories") else []
-            spec_questions.append(d)
-
-    conn.close()
-
-    questions = basic_questions + spec_questions
-    return {
-        "questions": questions,
-        "total_questions": len(questions),
-        "max_score": 74,
-        "pass_threshold": 68
-    }
 
 
 @router.post("/api/exam/submit")

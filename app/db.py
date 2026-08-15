@@ -58,7 +58,14 @@ def init_db():
         row = cursor.fetchone()
         if row and "'vision'" not in row[0]:
             cursor.executescript(migration_005_sql.read_text(encoding="utf-8"))
-        else:
+
+    migration_006_sql = PROJECT_ROOT / "tools" / "migrate_006.sql"
+    if migration_006_sql.exists():
+        cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='vision_review'")
+        row = cursor.fetchone()
+        if row and "'manual_accepted'" not in row[0]:
+            cursor.executescript(migration_006_sql.read_text(encoding="utf-8"))
+        elif not row:
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS vision_review (
                   question_id INTEGER PRIMARY KEY REFERENCES questions(id),
@@ -69,7 +76,7 @@ def init_db():
                   suggested_axis_c TEXT NOT NULL,
                   confidence REAL NOT NULL,
                   rationale TEXT,
-                  decision TEXT NOT NULL CHECK (decision IN ('auto_accepted', 'auto_corrected', 'queued', 'skipped_no_media')),
+                  decision TEXT NOT NULL CHECK (decision IN ('auto_accepted', 'auto_corrected', 'queued', 'skipped_no_media', 'manual_accepted')),
                   created_at TEXT NOT NULL DEFAULT (datetime('now'))
                 )
             """)

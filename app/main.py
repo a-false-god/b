@@ -3,8 +3,9 @@ Main FastAPI Application Entry Point for Prawko B MVP.
 Serves API routes, media files, and static frontend assets (SPA with fallback).
 """
 
+import time
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
@@ -21,10 +22,25 @@ STATIC_DIR.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(title="Prawko B MVP", version="1.0.0")
 
-# Run DB migrations on startup
+@app.middleware("http")
+async def log_requests_middleware(request: Request, call_next):
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = (time.perf_counter() - start_time) * 1000.0
+    print(f"[{request.method}] {request.url.path} -> {response.status_code} ({duration_ms:.2f}ms)", flush=True)
+    return response
+
+
+# Run DB migrations & backup check on startup
 @app.on_event("startup")
 def startup_db():
     init_db()
+    try:
+        from tools.backup_db import check_and_auto_backup
+        check_and_auto_backup()
+    except Exception as e:
+        import logging
+        logging.getLogger("uvicorn.error").warning(f"Startup backup check skipped: {e}")
 
 # Include API Router
 app.include_router(api_router)
