@@ -25,9 +25,18 @@ yarn-error.log*
 # Static & Database & Media files
 media/
 *.sqlite
+*.sqlite-shm
+*.sqlite-wal
 *.xlsx
+data/backups/
+.frames_cache/
+*.restoring.tmp*
 .DS_Store
 Thumbs.db
+walkthrough.md
+*screenshots/
+src/
+frontend/src/screenshots/
 
 # Archives and temporary files
 prawko-main/
