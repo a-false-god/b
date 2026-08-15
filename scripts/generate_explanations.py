@@ -156,14 +156,17 @@ def generate_explanation_for_question(question: Dict) -> Tuple[str, str, str, in
     content_hash = compute_question_content_hash(question, axis_signature=axis_b, mode="text")
 
     topic_key = detect_fine_grained_topic(q_pl, axis_b)
-    catalog_item = LEGAL_CATALOG.get(topic_key, {
-        "statute": "Art. 3 i Art. 4 Ustawy Prawo o ruchu drogowym (UPRD).",
-        "rule": "Uczestnik ruchu jest obowiązany zachować ostrożność, unikać wszelkiego działania, które mogłoby spowodować zagrożenie bezpieczeństwa, oraz stosować się do przepisów ruchu drogowego.",
-        "is_statutory": True
-    })
-
-    legal_basis = catalog_item["statute"]
-    rule_text = catalog_item["rule"]
+    if axis_b == "ekologia" or topic_key == "ecodriving":
+        legal_basis = "unknown"
+        rule_text = "Ecodriving opiera się na zasadach techniki kierowania pojazdem i fizyki, optymalizując zużycie paliwa oraz emisję spalin."
+    else:
+        catalog_item = LEGAL_CATALOG.get(topic_key, {
+            "statute": "Art. 3 i Art. 4 Ustawy Prawo o ruchu drogowym (UPRD).",
+            "rule": "Uczestnik ruchu jest obowiązany zachować ostrożność, unikać wszelkiego działania, które mogłoby spowodować zagrożenie bezpieczeństwa, oraz stosować się do przepisów ruchu drogowego.",
+            "is_statutory": True
+        })
+        legal_basis = catalog_item["statute"]
+        rule_text = catalog_item["rule"]
 
     if q_type == "TN":
         correct_text = "TAK" if correct == "T" else "NIE"
@@ -223,14 +226,17 @@ def regenerate_vision_explanation(
 
     q_dict["axis_b"] = axis_b
     topic_key = detect_fine_grained_topic(q_dict.get("q_pl", ""), axis_b)
-    catalog_item = LEGAL_CATALOG.get(topic_key, {
-        "statute": "Art. 3 i Art. 4 Ustawy Prawo o ruchu drogowym (UPRD).",
-        "rule": "Uczestnik ruchu jest obowiązany zachować ostrożność, unikać wszelkiego działania, które mogłoby spowodować zagrożenie bezpieczeństwa, oraz stosować się do przepisów ruchu drogowego.",
-        "is_statutory": True
-    })
-
-    legal_basis = catalog_item["statute"]
-    rule_text = catalog_item["rule"]
+    if axis_b == "ekologia" or topic_key == "ecodriving":
+        legal_basis = "unknown"
+        rule_text = "Ecodriving opiera się na zasadach techniki kierowania pojazdem i fizyki, optymalizując zużycie paliwa oraz emisję spalin."
+    else:
+        catalog_item = LEGAL_CATALOG.get(topic_key, {
+            "statute": "Art. 3 i Art. 4 Ustawy Prawo o ruchu drogowym (UPRD).",
+            "rule": "Uczestnik ruchu jest obowiązany zachować ostrożność, unikać wszelkiego działania, które mogłoby spowodować zagrożenie bezpieczeństwa, oraz stosować się do przepisów ruchu drogowego.",
+            "is_statutory": True
+        })
+        legal_basis = catalog_item["statute"]
+        rule_text = catalog_item["rule"]
     correct = str(q_dict.get("correct") or "").strip().upper()
     q_type = q_dict.get("type", "TN")
 

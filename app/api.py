@@ -301,11 +301,11 @@ def generate_explanation_task(question_id: int):
         cursor.execute("SELECT q.*, qc_b.value as axis_b FROM questions q LEFT JOIN question_classification qc_b ON q.id = qc_b.question_id AND qc_b.axis = 'B' WHERE q.id = ?", (question_id,))
         q_full = cursor.fetchone()
         if q_full:
-            explanation, legal_basis = generate_explanation_for_question(dict(q_full))
+            explanation, legal_basis, content_hash, needs_vision = generate_explanation_for_question(dict(q_full))
             cursor.execute("""
-                INSERT OR REPLACE INTO question_explanations (question_id, explanation, legal_basis, source)
-                VALUES (?, ?, ?, 'llm')
-            """, (question_id, explanation, legal_basis))
+                INSERT OR REPLACE INTO question_explanations (question_id, explanation, legal_basis, source, content_hash, needs_vision_review)
+                VALUES (?, ?, ?, 'llm', ?, ?)
+            """, (question_id, explanation, legal_basis, content_hash, needs_vision))
             conn.commit()
     conn.close()
 

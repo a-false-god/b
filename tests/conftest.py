@@ -62,6 +62,12 @@ def ensure_test_database():
             conn.commit()
             conn.close()
 
+            from scripts.classify_questions import classify_questions
+            classify_questions(limit=0, dry_run=False)
+
+            from scripts.generate_explanations import batch_generate_explanations
+            batch_generate_explanations(dry_run=False, limit=0, force_recompute=False)
+
     init_db()
 
 
