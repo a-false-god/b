@@ -88,13 +88,13 @@ def get_session_queue(
         return result
 
     # Default "auto" mode:
-    # 1. Recently incorrect questions (latest answer is wrong)
+    # 1. Recently incorrect questions (latest answer is wrong in learning mode)
     incorrect_query = """
         WITH LatestAnswer AS (
             SELECT question_id, is_correct,
                    ROW_NUMBER() OVER (PARTITION BY question_id ORDER BY id DESC) as rn
             FROM answer_events
-            WHERE user_id = ?
+            WHERE user_id = ? AND mode = 'nauka'
         )
         SELECT q.*, qc_a.value as axis_a, qc_b.value as axis_b
         FROM questions q
@@ -108,23 +108,23 @@ def get_session_queue(
     cursor.execute(incorrect_query, (user_id, limit))
     incorrect_rows = [dict(r) for r in cursor.fetchall()]
 
-    # 2. Spaced review candidates (seen, not mastered: either < 2 distinct days correct OR latest is incorrect)
+    # 2. Spaced review candidates (seen in learning, not mastered: either < 2 distinct days correct OR latest is incorrect)
     review_query = """
         WITH LatestEvent AS (
             SELECT question_id, is_correct,
                    ROW_NUMBER() OVER (PARTITION BY question_id ORDER BY id DESC) as rn
             FROM answer_events
-            WHERE user_id = ?
+            WHERE user_id = ? AND mode = 'nauka'
         ),
         CorrectDays AS (
             SELECT question_id, COUNT(DISTINCT DATE(created_at)) as distinct_days
             FROM answer_events
-            WHERE user_id = ? AND is_correct = 1
+            WHERE user_id = ? AND is_correct = 1 AND mode = 'nauka'
             GROUP BY question_id
         )
         SELECT DISTINCT q.*, qc_a.value as axis_a, qc_b.value as axis_b
         FROM questions q
-        JOIN answer_events ae ON q.id = ae.question_id AND ae.user_id = ?
+        JOIN answer_events ae ON q.id = ae.question_id AND ae.user_id = ? AND ae.mode = 'nauka'
         LEFT JOIN CorrectDays cd ON q.id = cd.question_id
         LEFT JOIN LatestEvent le ON q.id = le.question_id AND le.rn = 1
         LEFT JOIN question_classification qc_a ON q.id = qc_a.question_id AND qc_a.axis = 'A'
@@ -156,7 +156,7 @@ def get_session_queue(
         LEFT JOIN question_classification qc_a ON q.id = qc_a.question_id AND qc_a.axis = 'A'
         LEFT JOIN question_classification qc_b ON q.id = qc_b.question_id AND qc_b.axis = 'B'
         WHERE q.categories LIKE '%"B"%'
-          AND q.id NOT IN (SELECT DISTINCT question_id FROM answer_events WHERE user_id = ?)
+          AND q.id NOT IN (SELECT DISTINCT question_id FROM answer_events WHERE user_id = ? AND mode = 'nauka')
         ORDER BY q.points DESC, RANDOM()
         LIMIT ?
     """

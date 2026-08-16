@@ -250,7 +250,7 @@ def get_question(question_id: int, request: Request):
                    SUM(is_correct) AS correct_attempts,
                    AVG(time_ms) AS avg_time_ms
             FROM answer_events
-            WHERE user_id = ? AND question_id = ?
+            WHERE user_id = ? AND question_id = ? AND mode = 'nauka'
             """,
             (user_id, question_id)
         )
@@ -353,11 +353,11 @@ def submit_answer(req: AnswerSubmissionRequest, request: Request, background_tas
         is_correct = 1 if chosen == correct_answer else 0
         wrong_inc = 1 - is_correct
 
-        # 1. Insert answer_events row
+        # 1. Insert answer_events row (mode='nauka')
         cursor.execute(
             """
-            INSERT INTO answer_events (user_id, question_id, chosen, is_correct, time_ms, session_id)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO answer_events (user_id, question_id, chosen, is_correct, time_ms, session_id, mode)
+            VALUES (?, ?, ?, ?, ?, ?, 'nauka')
             """,
             (user_id, req.question_id, chosen, is_correct, req.time_ms, req.session_id)
         )
@@ -504,7 +504,7 @@ def get_error_analytics(
             SELECT ae.question_id, q.q_pl, COUNT(*) AS error_count
             FROM answer_events ae
             JOIN questions q ON ae.question_id = q.id
-            WHERE ae.is_correct = 0 AND ae.user_id = ?
+            WHERE ae.is_correct = 0 AND ae.user_id = ? AND ae.mode = 'nauka'
             GROUP BY ae.question_id
             ORDER BY error_count DESC
             LIMIT 50
@@ -519,7 +519,7 @@ def get_error_analytics(
             SELECT qc.value AS axis_value, COUNT(*) AS error_count
             FROM answer_events ae
             JOIN question_classification qc ON ae.question_id = qc.question_id
-            WHERE ae.is_correct = 0 AND ae.user_id = ? AND qc.axis = ?
+            WHERE ae.is_correct = 0 AND ae.user_id = ? AND qc.axis = ? AND ae.mode = 'nauka'
             GROUP BY qc.value
             ORDER BY error_count DESC
             """,
@@ -532,7 +532,7 @@ def get_error_analytics(
             SELECT ae.question_id, q.q_pl, ae.chosen, q.correct AS correct_option, COUNT(*) AS confused_count
             FROM answer_events ae
             JOIN questions q ON ae.question_id = q.id
-            WHERE ae.is_correct = 0 AND q.type = 'ABC' AND ae.user_id = ?
+            WHERE ae.is_correct = 0 AND q.type = 'ABC' AND ae.user_id = ? AND ae.mode = 'nauka'
             GROUP BY ae.question_id, ae.chosen
             ORDER BY confused_count DESC
             LIMIT 50
@@ -561,7 +561,7 @@ def get_reason_analytics(request: Request = None):
           SUM(CASE WHEN is_correct = 0 AND time_ms >= ? THEN 1 ELSE 0 END) AS mistakes,
           SUM(CASE WHEN is_correct = 1 AND time_ms > ? THEN 1 ELSE 0 END) AS uncertainty
         FROM answer_events
-        WHERE user_id = ?
+        WHERE user_id = ? AND mode = 'nauka'
         """,
         (SLIP_THRESHOLD_MS, SLIP_THRESHOLD_MS, HESITATION_THRESHOLD_MS, user_id)
     )
@@ -587,7 +587,7 @@ def get_hesitation_analytics(request: Request = None):
         SELECT ae.question_id, q.q_pl, ae.time_ms, ae.created_at
         FROM answer_events ae
         JOIN questions q ON ae.question_id = q.id
-        WHERE ae.is_correct = 1 AND ae.time_ms > ? AND ae.user_id = ?
+        WHERE ae.is_correct = 1 AND ae.time_ms > ? AND ae.user_id = ? AND ae.mode = 'nauka'
         ORDER BY ae.time_ms DESC
         LIMIT 50
         """,
@@ -608,9 +608,9 @@ def get_coverage_analytics(request: Request = None):
     cursor.execute("SELECT COUNT(*) FROM questions WHERE categories LIKE '%\"B\"%'")
     total_cat_b = cursor.fetchone()[0]
 
-    # Seen questions by user
+    # Seen questions by user in learning mode
     cursor.execute(
-        "SELECT COUNT(DISTINCT question_id) FROM answer_events WHERE user_id = ?",
+        "SELECT COUNT(DISTINCT question_id) FROM answer_events WHERE user_id = ? AND mode = 'nauka'",
         (user_id,)
     )
     seen_count = cursor.fetchone()[0]
@@ -623,12 +623,12 @@ def get_coverage_analytics(request: Request = None):
           SELECT question_id, is_correct,
                  ROW_NUMBER() OVER (PARTITION BY question_id ORDER BY id DESC) as rn
           FROM answer_events
-          WHERE user_id = ?
+          WHERE user_id = ? AND mode = 'nauka'
         ),
         CorrectDays AS (
           SELECT question_id
           FROM answer_events
-          WHERE user_id = ? AND is_correct = 1
+          WHERE user_id = ? AND is_correct = 1 AND mode = 'nauka'
           GROUP BY question_id
           HAVING COUNT(DISTINCT DATE(created_at)) >= 2
         )
@@ -746,14 +746,14 @@ def get_dashboard(request: Request):
     per_axis_b_rows = cursor.fetchall()
     per_axis_b = {r["axis_value"]: round(r["theta"], 4) for r in per_axis_b_rows}
 
-    # Total answered & accuracy
+    # Total answered & accuracy in learning mode
     cursor.execute(
         """
         SELECT COUNT(*) AS total_answers,
                SUM(is_correct) AS correct_answers,
                AVG(time_ms) AS avg_time_ms
         FROM answer_events
-        WHERE user_id = ?
+        WHERE user_id = ? AND mode = 'nauka'
         """,
         (user_id,)
     )
@@ -766,7 +766,7 @@ def get_dashboard(request: Request):
     cursor.execute("SELECT COUNT(*) FROM questions WHERE categories LIKE '%\"B\"%'")
     total_cat_b = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COUNT(DISTINCT question_id) FROM answer_events WHERE user_id = ?", (user_id,))
+    cursor.execute("SELECT COUNT(DISTINCT question_id) FROM answer_events WHERE user_id = ? AND mode = 'nauka'", (user_id,))
     seen_count = cursor.fetchone()[0]
     never_seen_count = max(0, total_cat_b - seen_count)
 
@@ -776,12 +776,12 @@ def get_dashboard(request: Request):
           SELECT question_id, is_correct,
                  ROW_NUMBER() OVER (PARTITION BY question_id ORDER BY id DESC) as rn
           FROM answer_events
-          WHERE user_id = ?
+          WHERE user_id = ? AND mode = 'nauka'
         ),
         CorrectDays AS (
           SELECT question_id
           FROM answer_events
-          WHERE user_id = ? AND is_correct = 1
+          WHERE user_id = ? AND is_correct = 1 AND mode = 'nauka'
           GROUP BY question_id
           HAVING COUNT(DISTINCT DATE(created_at)) >= 2
         )
@@ -802,7 +802,7 @@ def get_dashboard(request: Request):
                SUM(CASE WHEN ae.is_correct = 0 THEN 1 ELSE 0 END) AS error_count
         FROM answer_events ae
         JOIN question_classification qc ON ae.question_id = qc.question_id
-        WHERE ae.user_id = ? AND qc.axis = 'B'
+        WHERE ae.user_id = ? AND qc.axis = 'B' AND ae.mode = 'nauka'
         GROUP BY qc.value
         ORDER BY error_count DESC, total_attempts DESC
         """,
@@ -828,7 +828,7 @@ def get_dashboard(request: Request):
         """
         SELECT COUNT(DISTINCT question_id)
         FROM answer_events
-        WHERE user_id = ? AND (is_correct = 0 OR time_ms > ?)
+        WHERE user_id = ? AND (is_correct = 0 OR time_ms > ?) AND mode = 'nauka'
         """,
         (user_id, HESITATION_THRESHOLD_MS)
     )
@@ -842,7 +842,7 @@ def get_dashboard(request: Request):
           SUM(CASE WHEN is_correct = 0 AND time_ms >= ? THEN 1 ELSE 0 END) AS mistakes,
           SUM(CASE WHEN is_correct = 1 AND time_ms > ? THEN 1 ELSE 0 END) AS uncertainty
         FROM answer_events
-        WHERE user_id = ?
+        WHERE user_id = ? AND mode = 'nauka'
         """,
         (SLIP_THRESHOLD_MS, SLIP_THRESHOLD_MS, HESITATION_THRESHOLD_MS, user_id)
     )
@@ -873,14 +873,14 @@ def get_dashboard(request: Request):
                COALESCE(qs.attempts, 0) AS attempts,
                COALESCE(qs.wrong, 0) AS wrong,
                (CAST(COALESCE(qs.wrong, 0) AS REAL) + ?) / (CAST(COALESCE(qs.attempts, 0) AS REAL) + ? + ?) AS p_err
-        FROM questions q
-        LEFT JOIN question_stats qs ON q.id = qs.question_id
-        WHERE q.categories LIKE '%"B"%'
-        ORDER BY p_err DESC, attempts DESC, q.id ASC
-        LIMIT 5
-        """,
-        (DIFF_ALPHA, DIFF_ALPHA, DIFF_BETA)
-    )
+            FROM questions q
+            LEFT JOIN question_stats qs ON q.id = qs.question_id
+            WHERE q.categories LIKE '%"B"%'
+            ORDER BY p_err DESC, attempts DESC, q.id ASC
+            LIMIT 5
+            """,
+            (DIFF_ALPHA, DIFF_ALPHA, DIFF_BETA)
+        )
     hardest_questions = []
     for r in cursor.fetchall():
         d = dict(r)
@@ -896,7 +896,7 @@ def get_dashboard(request: Request):
         SELECT ae.id, ae.question_id, q.q_pl, ae.chosen, ae.is_correct, ae.time_ms, ae.created_at
         FROM answer_events ae
         JOIN questions q ON ae.question_id = q.id
-        WHERE ae.user_id = ?
+        WHERE ae.user_id = ? AND ae.mode = 'nauka'
         ORDER BY ae.id DESC
         LIMIT 10
         """,
@@ -1045,8 +1045,20 @@ def submit_exam_check(req: ExamSubmissionRequest, request: Request):
         """,
         (user_id, score, passed, req.time_seconds, json.dumps(details))
     )
-    conn.commit()
     exam_id = cursor.lastrowid
+
+    # Log each individual question answer from the exam into answer_events with mode='sprawdzian'
+    exam_session_id = f"exam:{exam_id}"
+    for d in details:
+        cursor.execute(
+            """
+            INSERT INTO answer_events (user_id, question_id, chosen, is_correct, time_ms, session_id, mode, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, 'sprawdzian', datetime('now'))
+            """,
+            (user_id, d["question_id"], d["chosen"], 1 if d["is_correct"] else 0, d["time_ms"], exam_session_id)
+        )
+
+    conn.commit()
     conn.close()
 
     return {

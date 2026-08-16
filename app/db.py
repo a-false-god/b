@@ -94,6 +94,13 @@ def init_db():
     if migration_008_sql.exists():
         cursor.executescript(migration_008_sql.read_text(encoding="utf-8"))
 
+    migration_009_sql = PROJECT_ROOT / "tools" / "migrate_009.sql"
+    if migration_009_sql.exists():
+        cursor.execute("PRAGMA table_info(answer_events)")
+        columns = [col["name"] if isinstance(col, sqlite3.Row) else col[1] for col in cursor.fetchall()]
+        if "mode" not in columns:
+            cursor.executescript(migration_009_sql.read_text(encoding="utf-8"))
+
     # Ensure optional columns exist for schema evolution
     for col, col_type in [("content_hash", "TEXT"), ("needs_vision_review", "INTEGER DEFAULT 0")]:
         try:
