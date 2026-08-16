@@ -2,8 +2,8 @@
 
 [![CI](https://github.com/a-false-god/b/actions/workflows/ci.yml/badge.svg)](https://github.com/a-false-god/b/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
-[![React 19](https://img.shields.io/badge/react-19-61dafb.svg)](https://react.dev/)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
+[![React 18](https://img.shields.io/badge/react-18-61dafb.svg)](https://react.dev/)
 [![Tests](https://img.shields.io/badge/tests-80%20passed-success.svg)](https://github.com/a-false-god/b/actions)
 
 > **Prawko B** to responsywna, adaptacyjna aplikacja webowa do efektywnej nauki pełnej bazy 2 135 pytań państwowego egzaminu teoretycznego na prawo jazdy kategorii B (zgodna z oficjalnym katalogiem Ministerstwa Infrastruktury).
