@@ -6,8 +6,8 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
-/dist/
 build/
+dist/
 *.egg-info/
 
 !app/static/dist/
@@ -18,7 +18,6 @@ env/
 .venv/
 .env
 
-
 # Node
 frontend/node_modules/
 node_modules/
@@ -26,14 +25,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Static & Database & Media files
-/media/
+# Media & Database & Cache files
+media/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
 *.xlsx
-/data/backups/
-/.frames_cache/
+data/backups/
+data/.frames_cache/
+.frames_cache/
 *.restoring.tmp*
 .DS_Store
 Thumbs.db

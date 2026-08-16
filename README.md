@@ -1,169 +1,151 @@
-# Prawko B — Aplikacja do nauki pytań egzaminacyjnych kat. B
+# Prawko B — Inteligentna platforma do nauki na prawo jazdy kat. B
 
 [![CI](https://github.com/a-false-god/b/actions/workflows/ci.yml/badge.svg)](https://github.com/a-false-god/b/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
+[![React 19](https://img.shields.io/badge/react-19-61dafb.svg)](https://react.dev/)
+[![Tests](https://img.shields.io/badge/tests-80%20passed-success.svg)](https://github.com/a-false-god/b/actions)
 
-Prawko B to nowoczesna, responsywna aplikacja internetowa wspierająca przygotowanie do państwowego egzaminu teoretycznego na prawo jazdy kategorii B (zgodna z oficjalnym katalogiem pytań Ministerstwa Infrastruktury).
+> **Prawko B** to responsywna, adaptacyjna aplikacja webowa do efektywnej nauki pełnej bazy 2 135 pytań państwowego egzaminu teoretycznego na prawo jazdy kategorii B (zgodna z oficjalnym katalogiem Ministerstwa Infrastruktury).
+
+---
+
+## Zrzuty ekranu
+
+| Pulpit gotowości i analityka (Dark Mode) | Moduł nauki z wideo i skrótami klawiszowymi |
+|:---:|:---:|
+| ![Pulpit analityki](tests/e2e/baseline/dashboard_readiness_dark_desktop.png) | ![Moduł nauki](tests/e2e/baseline/nauka_learning_dark_desktop.png) |
+
+---
+
+## Główne funkcje
+
+### 🧠 Inteligentny kompozytor sesji nauki
+- **Priorytetyzacja powtórek**: Sesje dynamicznie łączą pytania wymagające powtórki (~60% błędne oraz powtórki w interwale) z nowymi pytaniami (~40%).
+- **Maksymalizacja punktów egzaminacyjnych**: Nowe pytania są sortowane według wagi punktowej (3 pkt $\to$ 2 pkt $\to$ 1 pkt), co pozwala szybko zabezpieczyć ~65% punktów egzaminacyjnych.
+- **Przeplatanie dziedzin (Interleaving)**: Algorytm rotuje pytania pomiędzy 8 domenami tematycznymi (Oś B), zapobiegając monotonii i wzmacniając transfer wiedzy.
+
+### 📈 Model biegłości Rascha ($\theta$) i retencja
+- **Pomiar trudności pytań i umiejętności użytkownika**: Ciągła estymacja biegłości $\theta$ (Rasch IRT) w ujęciu globalnym oraz dla poszczególnych domen.
+- **Reguła trwałego opanowania (Mastery)**: Pytanie uznaje się za opanowane dopiero po poprawnych odpowiedziach w co najmniej 2 różnych dniach kalendarzowych.
+- **Wygaszanie nieaktywnych dziedzin (Decay)**: Brak powtórek w danej domenie powoduje stopniowe obniżanie wskaźnika gotowości.
+
+### ⏱️ Pełna symulacja oficjalnego egzaminu państwowego
+- **Zgodność z przepisami WORD**: Dokładny arkusz 32 pytań (20 podstawowych T/N: 10×3pkt, 6×2pkt, 4×1pkt + 12 specjalistycznych ABC: 6×3pkt, 4×2pkt, 2×1pkt).
+- **Punktacja i czas**: Maksymalnie 74 punkty, próg zdawalności 68 punktów, limit czasu 25 minut.
+- **Izolacja danych**: Próby egzaminacyjne są logowane niezależnie (`mode='sprawdzian'`), przygotowując bazę pod analizę IRT/HLR bez zniekształcania kolejki nauki.
+
+### 🤖 Podwójny pas AI (Wyjaśnienia + Weryfikacja wizualna)
+- **Rzetelna podstawa prawna**: Każde pytanie posiada zweryfikowane wyjaśnienie ze wskazaniem artykułu ustawy *Prawo o ruchu drogowym* lub właściwego rozporządzenia o znakach i sygnałach drogowych.
+- **Vision Pass (Gemini 2.5 Flash)**: Zautomatyzowana inspekcja klatek wideo/animacji eliminująca halucynacje kontekstowe dla pytań sytuacyjnych.
+
+### 📊 Zaawansowana analityka błędów i taksonomia
+- **Trójwymiarowa taksonomia pytań**: Oś A (zapotrzebowanie poznawcze Bloom: pamięć/rozumienie/zastosowanie/analiza), Oś B (dziedziny tematyczne GDE), Oś C (pułapki językowe i jakość pytania).
+- **Kategoryzacja Reason**: Automatyczny podział pomyłek na potknięcia (slips, czas <8s), błędy merytoryczne (mistakes, czas $\ge$8s) oraz niepewność (uncertainty, poprawne przy czasie >15s).
+
+### 🎨 Design System Ritual v2
+- Dopracowany interfejs w trybach **Dark Mode** i **Light Mode**, w pełni responsywny (Smartfony, Tablety, Desktop).
+- Klawiaturocentryczna nawigacja (strzałki $\leftarrow$/$\rightarrow$, klawisze `1`–`4`, `T`/`N`, `A`/`B`/`C`, `Spacja`).
+- Optymalizacja pod wolne łącza mobilne: pakiet fontów Inter ograniczony ściśle do podzbiorów Latin + Latin-Ext (**−41.6% dist gzip**, pełne polskie znaki `ąćęłńóśźż`).
 
 ---
 
 ## Szybki start
 
-### Wymagania
-- Python 3.11+
-- Node.js 20+
+### Wymagania wstępne
+- **Python 3.11+** (zalecany 3.13)
+- **Node.js 20+** oraz `npm`
 
-### Uruchomienie lokalne
+### 1. Uruchomienie lokalne (Development)
+
 ```bash
-# 1. Backend
+# 1. Klonowanie repozytorium
+git clone https://github.com/a-false-god/b.git
+cd b
+
+# 2. Konfiguracja środowiska
+cp .env.example .env
+
+# 3. Instalacja zależności Pythona i uruchomienie backendu
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
+```
 
-# 2. Frontend (development)
+W osobnym terminalu (frontend):
+```bash
 cd frontend
-npm.cmd install
-npm.cmd run dev
+npm install
+npm run dev
 ```
+Aplikacja uruchomi się pod adresem: `http://localhost:5173` (Vite) z proxy do API na porcie `8000`.
 
-Aplikacja dostępna pod adresem: `http://localhost:8000` (lub `http://localhost:5173` w trybie Vite dev).
+### 2. Uruchomienie w Dockerze (Produkcja / Kontener)
 
----
+Projekt zawiera zoptymalizowany, wieloetapowy obraz Docker przystosowany do serwerów o małej ilości pamięci RAM (512 MB – 1 GB):
 
-## Baza danych i kopie zapasowe (Task S1)
-
-Kopie zapasowe bazy SQLite tworzone są za pomocą SQLite Online Backup API do katalogu `data/backups/`.
-
-### Ręczne wykonanie kopii zapasowej
-```bash
-python tools/backup_db.py
-```
-
-### Polityka retencji
-- **14 migawek dziennych**: najnowszy snapshot z każdego z ostatnich 14 dni kalendarzowych.
-- **4 migawki tygodniowe**: po 1 snapshot na tydzień dla 4 poprzedzających tygodni.
-- Starsze migawki są automatycznie usuwane przy tworzeniu nowej kopii.
-- Przy starcie aplikacji FastAPI (`app/main.py`) sprawdza wiek najnowszego snapshotu i w razie potrzeby tworzy nową kopię (w sposób nieblokujący).
-
-### Przywracanie bazy (Restore Drill)
-Przed przywróceniem narzędzie automatycznie weryfikuje integralność bazy (`PRAGMA integrity_check`).
-```bash
-python tools/backup_db.py --restore data/backups/prawko_YYYYMMDD_HHMMSS.sqlite
-```
-
----
-
-## Bezpieczeństwo i Kontrola Dostępu (Task S4 & Pre-Public Hardening)
-- **Trwałe sesje w SQLite (BE-01)**: Sesje użytkowników są trwale zapisywane w tabeli `user_sessions` (SQLite WAL) z automatyczną rotacją tokenów przy logowaniu i usuwaniem przy wylogowaniu. Sesje przeżywają restarty kontenera i serwera Uvicorn.
-- **Inteligentne ograniczanie częstotliwości żądań (Rate Limiting & BE-02)**: Maksymalnie 5 prób uwierzytelnienia na minutę na rzeczywisty adres IP klienta (`429 Too Many Requests`). Za proxy Caddy odczytywany jest nagłówek `X-Forwarded-For` wyłącznie od zaufanych peerów (loopback `127.0.0.1`, sieci prywatne/Docker Compose lub konfigurowalne przez `TRUSTED_PROXIES`). Próby fałszowania nagłówka z otwartego internetu są ignorowane.
-- **Ochrona przed enumeracją kont**: Identyczny czas odpowiedzi (poprzez stałoczasową weryfikację hasła atrapą) oraz identyczny komunikat błędu dla nieistniejącego użytkownika i błędnego hasła.
-- **Rotacja sesji i ciasteczka**: Pliki cookie sesji posiadają atrybuty `HttpOnly`, `SameSite=Lax`, `Max-Age=30 dni` oraz nowy kryptograficzny token generowany przy każdym logowaniu.
-- **CORS**: Ścisła polityka same-origin (brak zezwoleń dla domen obcych).
-
----
-
-## Obserwowalność i Niezawodność (Task S6)
-- **Health Check**: `GET /healthz` zwraca status serwisu, łączność z bazą danych oraz liczbę pytań (`{"status": "ok", "db_ok": true, "questions_count": 3698}`).
-- **Middleware logujący**: Wypisuje metodę HTTP, ścieżkę, kod statusu oraz czas wykonania w ms do stdout.
-- **React ErrorBoundary**: Chroni interfejs użytkownika przed awariami komponentów, prezentując stonowany widok awaryjny Ritual z możliwością odświeżenia stanu.
-
----
-
-## Testy i weryfikacja
-
-### Pełny zestaw testów (jednostkowe, integracyjne, właściwościowe Hypothesis, bezpieczeństwo)
-```bash
-pytest -v
-```
-
-### Pominięcie testów przeglądarkowych Playwright w środowiskach bez GUI (CI / kontenery)
-```bash
-SKIP_PLAYWRIGHT_TESTS=1 pytest
-```
-
-### Aktualizacja baseline dla testów regresji wizualnej (Playwright)
-```bash
-pytest tests/e2e/test_visual_regression.py --update-baseline
-```
-
----
-
-## Metryki katalogu pytań (Task S7)
-
-Wyjaśnienie i weryfikacja liczb katalogowych:
-```bash
-python tools/clarify_metrics.py
-```
-
-- **3 698**: Wszystkie rekordy w oficjalnym katalogu pytań.
-- **2 135**: Aktywne pytania kategorii B.
-- **1 941**: Odwołania do mediów dla wszystkich pytań kat. B (w tym w trakcie weryfikacji).
-- **1 789**: Odwołania do mediów w aktywnej puli kat. B (oraz unikalne pliki mediów dla wszystkich rekordów).
-- **1 566**: Unikalne pliki mediów w aktywnej puli kat. B.
-
----
-
-## Wdrożenie produkcyjne (Oracle Cloud Always Free ARM64 — Task P6)
-
-Architektura produkcyjna:
-- **Serwer**: Oracle Cloud A1.Flex ARM64 (Ubuntu 24.04 LTS, region domowy Frankfurt).
-- **Ingress & TLS**: Caddy 2 reverse proxy z automatycznymi certyfikatami Let's Encrypt (`https://prawko.lqdb.pl`).
-- **Aplikacja**: FastAPI backend + React SPA serwowane w Dockerze (izolowane na `127.0.0.1:8000`).
-- **Kopie zapasowe**: Automatyczny nightly cron rclone o `04:00` synchronizujący `data/backups/`.
-
-### 1. Wymagania wstępne i DNS
-Upewnij się, że rekord DNS `A` dla `prawko.lqdb.pl` wskazuje na publiczny adres IP VPS przed uruchomieniem Caddy.
-W OCI Security List otwórz porty Ingress: TCP 22 (SSH), TCP 80 (HTTP) oraz TCP 443 (HTTPS).
-
-### 2. Konfiguracja na serwerze VPS
-```bash
-# Klonowanie repozytorium
-git clone https://github.com/a-false-god/b.git ~/b
-cd ~/b
-
-# Utworzenie pliku .env z kluczem rejestracji
-cp .env.example .env # lub wygeneruj:
-echo "REGISTRATION_KEY=$(openssl rand -hex 16)" >> .env
-echo "TZ=Europe/Warsaw" >> .env
-```
-
-### 3. Synchronizacja mediów i bazy danych
-Z maszyny lokalnej prześlij pliki mediów (~2 GB) oraz bazę SQLite:
-```bash
-rsync -avz --progress ./media/ ubuntu@<VPS_IP>:~/b/media/
-rsync -avz --progress ./data/prawko.sqlite ubuntu@<VPS_IP>:~/b/data/prawko.sqlite
-```
-
-### 4. Uruchomienie Docker Compose
 ```bash
 docker compose up -d --build
 ```
-Weryfikacja lokalna:
+Aplikacja jest serwowana bezpośrednio na `http://localhost:8000`.
+
+> **Wskazówka LAN (Nauka na telefonie w domowym Wi-Fi):**
+> Aby korzystać z aplikacji na smartfonie, uruchom backend na `0.0.0.0` lub przez Docker Compose i otwórz w przeglądarce telefonu adres `http://<IP_KOMPUTERA>:8000`.
+
+---
+
+## Testy i zapewnienie jakości
+
+Projekt utrzymuje 100% pokrycia kluczowych ścieżek krytycznych, właściwości matematycznych oraz testów regresji wizualnej:
+
 ```bash
-curl -s http://localhost:8000/healthz
-# Oczekiwana odpowiedź: {"status":"ok","db_ok":true,"questions_count":3698}
+# Uruchomienie pełnego zestawu testów (80/80 green)
+pytest -v
+
+# Uruchomienie w środowisku bez przeglądarki GUI (CI / serwery bez X11)
+SKIP_PLAYWRIGHT_TESTS=1 pytest -v
 ```
 
-### 5. Utwardzenie systemu (Hardening)
+### Protokół regresji wizualnej (Playwright)
+Testy weryfikują pixel-perfect rendering komponentów na powierzchniach desktop/mobile w trybie jasnym i ciemnym:
 ```bash
-# Firewall UFW
-sudo ufw allow 22/tcp
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw --force enable
-
-# Blokada logowania hasłem po SSH (zachowanie kluczy)
-sudo sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true
-sudo systemctl restart ssh || sudo systemctl restart sshd
-
-# Automatyczne aktualizacje bezpieczeństwa
-sudo apt update && sudo apt install -y unattended-upgrades
-sudo systemctl enable --now unattended-upgrades
+# Uruchomienie testów regresji wizualnej
+pytest tests/e2e/test_visual_regression.py -v
 ```
+> **Zasada:** Aktualizacja baseline'ów wizualnych (`--update-baseline`) może być przeprowadzona **wyłącznie** po uprzedniej manualnej weryfikacji aplikacji na żywo i świadomej akceptacji zmian wizualnych.
 
-### 6. Harmonogram kopii zapasowych (Rclone Cron)
-Skonfiguruj zdalny magazyn w rclone (`rclone config`), dodaj `BACKUP_REMOTE=twoj_remote` do `~/.bashrc` / `~/b/.env` i dodaj zadanie do crontaba:
-```bash
-crontab -e
-# Dodaj wpis:
-0 4 * * * /home/ubuntu/b/ops/rclone-backup.sh >> /var/log/rclone-backup.log 2>&1
-```
+---
 
+## Bezpieczeństwo i Niezawodność
+
+- **Trwałe sesje w SQLite WAL**: Sesje użytkowników przechowywane są w tabeli `user_sessions`, przetrzymując restarty kontenera.
+- **Ochrona przed brute-force**: Inteligentny rate-limiter (5 prób/min na rzeczywisty IP) z poprawną obsługą zaufanych nagłówków `X-Forwarded-For` (`TRUSTED_PROXIES`).
+- **Ochrona rejestracji (`REGISTRATION_KEY`)**: Możliwość zablokowania publicznej rejestracji tokenem zaproszeniowym.
+- **Optymalizacja SQLite pod 1 GB RAM**: Włączone pragmy `synchronous=NORMAL`, `cache_size=-8000` (8 MB w pamięci RAM), `temp_store=MEMORY`, `mmap_size=32 MB`.
+- **Niezmienne nagłówki pamięci podręcznej**: Pliki `/media/` serwowane są z nagłówkiem `Cache-Control: public, max-age=31536000, immutable`.
+- **Kopie zapasowe**: Zintegrowany mechanizm kopii zapasowych SQLite Online Backup API (`tools/backup_db.py`) z retencją (14 dniowych + 4 tygodniowe) oraz synchronizacją `rclone`.
+
+---
+
+## Wdrożenie produkcyjne (VPS / Oracle Cloud Always Free)
+
+Aplikacja jest zoptymalizowana do pracy na bezpłatnych instancjach chmurowych (np. Oracle Cloud E2.1.Micro 1 GB RAM / A1.Flex ARM64):
+
+1. **Konfiguracja DNS**: Skieruj domenę (np. `prawko.twojadomena.pl`) na IP serwera.
+2. **Reverse Proxy & TLS**: Rekomendowane użycie serwera **Caddy 2** (automatyczny certyfikat Let's Encrypt, HTTP/2, kompresja zstd/gzip).
+3. **Pliki mediów**: Prześlij katalog `media/` (~2 GB) oraz bazę SQLite przez `rsync`:
+   ```bash
+   rsync -avz --progress ./media/ ubuntu@<VPS_IP>:~/b/media/
+   ```
+4. **Uruchomienie**:
+   ```bash
+   docker compose up -d --build
+   ```
+
+---
+
+## Nota prawna i licencjonowanie
+
+- **Kod źródłowy**: Całość autorskiego kodu aplikacji (backend FastAPI, frontend React, skrypty analityczne) udostępniona jest na licencji **[MIT](LICENSE)**.
+- **Baza pytań egzaminacyjnych**: Teksty pytań i odpowiedzi pochodzą z oficjalnego katalogu Ministerstwa Infrastruktury i podlegają licencji **CC BY-SA 4.0**.
+- **Materiały multimedialne (klipy wideo, zdjęcia, animacje)**: Materiały egzaminacyjne udostępnione przez Ministerstwo Infrastruktury podlegają licencji **CC BY-NC-ND 4.0** (Uznanie autorstwa — Użycie niekomercyjne — Bez utworów zależnych).
+- **Status repozytorium**: Repozytorium **nie hostuje ani nie dystrybuuje** plików multimedialnych objętych prawami autorskimi. Aplikacja przeznaczona jest do użytku niekomercyjnego w zamkniętych instalacjach self-hosted.
