@@ -23,13 +23,12 @@ client = TestClient(app)
 def test_static_and_root_routes():
     res = client.get("/")
     assert res.status_code == 200
-    assert "Prawko B" in res.text
+    assert "root" in res.text or "Prawko B" in res.text
 
-    css_res = client.get("/static/css/style.css")
-    assert css_res.status_code == 200
-
-    js_res = client.get("/static/js/app.js")
-    assert js_res.status_code == 200
+    # SPA client routes return 200 HTML
+    nauka_res = client.get("/nauka")
+    assert nauka_res.status_code == 200
+    assert "root" in nauka_res.text or "Prawko B" in nauka_res.text
 
 
 def test_questions_api_filtering():
@@ -65,7 +64,27 @@ def test_media_wmv_fallback():
         res = client.get("/media/test_sample_video.wmv")
         assert res.status_code == 200
         assert res.content == b"dummy mp4 video bytes"
+        assert res.headers.get("cache-control") == "public, max-age=31536000, immutable"
     finally:
         if dummy_mp4.exists():
             dummy_mp4.unlink()
+
+
+def test_media_cache_control_headers():
+    media_dir = PROJECT_ROOT / "media"
+    dummy_img = media_dir / "test_cache_check.jpg"
+    try:
+        dummy_img.write_bytes(b"dummy image bytes")
+        res = client.get("/media/test_cache_check.jpg")
+        assert res.status_code == 200
+        assert res.headers.get("cache-control") == "public, max-age=31536000, immutable"
+
+        # 404 must not have immutable cache control
+        res_404 = client.get("/media/missing_never_exists.jpg")
+        assert res_404.status_code == 404
+        assert res_404.headers.get("cache-control") != "public, max-age=31536000, immutable"
+    finally:
+        if dummy_img.exists():
+            dummy_img.unlink()
+
 

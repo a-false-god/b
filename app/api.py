@@ -853,17 +853,18 @@ def get_dashboard(request: Request):
         "uncertainty": r_row.get("uncertainty") or 0
     }
 
-    # Skill history (theta trajectory)
+    # Skill history (theta trajectory capped to latest 100 points for dashboard latency)
     cursor.execute(
         """
         SELECT id, theta, created_at
         FROM skill_history
         WHERE user_id = ?
-        ORDER BY id ASC
+        ORDER BY id DESC
+        LIMIT 100
         """,
         (user_id,)
     )
-    skill_history_rows = [dict(r) for r in cursor.fetchall()]
+    skill_history_rows = [dict(r) for r in cursor.fetchall()][::-1]
 
     # Hardest questions ordered by smoothed error % (p_err) and including attempts
     cursor.execute(
@@ -943,10 +944,16 @@ def get_skill_history(request: Request):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT id, theta, created_at FROM skill_history WHERE user_id = ? ORDER BY id ASC",
+        """
+        SELECT id, theta, created_at
+        FROM skill_history
+        WHERE user_id = ?
+        ORDER BY id DESC
+        LIMIT 100
+        """,
         (user_id,)
     )
-    rows = [dict(r) for r in cursor.fetchall()]
+    rows = [dict(r) for r in cursor.fetchall()][::-1]
     conn.close()
     return rows
 

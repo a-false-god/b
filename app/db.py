@@ -12,18 +12,22 @@ DB_PATH = PROJECT_ROOT / "data" / "prawko.sqlite"
 
 
 def get_db_connection() -> sqlite3.Connection:
-    """Get a raw sqlite3 connection with Row factory."""
+    """Get a raw sqlite3 connection with Row factory and optimized pragmas."""
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH, timeout=30.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA busy_timeout = 30000")
+    conn.execute("PRAGMA journal_mode = WAL")
+    conn.execute("PRAGMA synchronous = NORMAL")
+    conn.execute("PRAGMA cache_size = -8000")
+    conn.execute("PRAGMA temp_store = MEMORY")
+    conn.execute("PRAGMA mmap_size = 33554432")
     return conn
 
 
 def init_db():
     """Ensure migration scripts and taxonomy seeding are executed."""
     conn = get_db_connection()
-    conn.execute("PRAGMA journal_mode = WAL")
     cursor = conn.cursor()
 
     migration_sql = PROJECT_ROOT / "tools" / "migrate_001.sql"
@@ -85,6 +89,10 @@ def init_db():
     migration_007_sql = PROJECT_ROOT / "tools" / "migrate_007.sql"
     if migration_007_sql.exists():
         cursor.executescript(migration_007_sql.read_text(encoding="utf-8"))
+
+    migration_008_sql = PROJECT_ROOT / "tools" / "migrate_008.sql"
+    if migration_008_sql.exists():
+        cursor.executescript(migration_008_sql.read_text(encoding="utf-8"))
 
     # Ensure optional columns exist for schema evolution
     for col, col_type in [("content_hash", "TEXT"), ("needs_vision_review", "INTEGER DEFAULT 0")]:

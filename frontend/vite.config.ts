@@ -36,10 +36,7 @@ export default defineConfig({
           vendor: ['react', 'react-dom', 'wouter', '@tanstack/react-query'],
           radix: [
             '@radix-ui/react-dialog',
-            '@radix-ui/react-progress',
-            '@radix-ui/react-separator',
-            '@radix-ui/react-slot',
-            '@radix-ui/react-tabs'
+            '@radix-ui/react-slot'
           ]
         }
       }

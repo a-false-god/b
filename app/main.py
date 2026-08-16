@@ -31,10 +31,15 @@ async def log_requests_middleware(request: Request, call_next):
     return response
 
 
-# Run DB migrations & backup check on startup
+# Run DB migrations, session pruning & backup check on startup
 @app.on_event("startup")
 def startup_db():
     init_db()
+    try:
+        from app.auth import prune_expired_sessions
+        prune_expired_sessions()
+    except Exception as e:
+        pass
     try:
         from tools.backup_db import check_and_auto_backup
         check_and_auto_backup()
@@ -45,25 +50,27 @@ def startup_db():
 # Include API Router
 app.include_router(api_router)
 
+MEDIA_CACHE_HEADERS = {"Cache-Control": "public, max-age=31536000, immutable"}
+
 # Custom media endpoint with .wmv -> .mp4 extension fallback
 @app.get("/media/{filename}")
 def serve_media_file(filename: str):
     file_path = MEDIA_DIR / filename
     if file_path.exists():
-        return FileResponse(file_path)
+        return FileResponse(file_path, headers=MEDIA_CACHE_HEADERS)
     
     # Fallback: serve .mp4 if .wmv is requested
     if filename.lower().endswith(".wmv"):
         mp4_path = MEDIA_DIR / (Path(filename).stem + ".mp4")
         if mp4_path.exists():
-            return FileResponse(mp4_path, media_type="video/mp4")
+            return FileResponse(mp4_path, media_type="video/mp4", headers=MEDIA_CACHE_HEADERS)
             
     # Fallback: check alternative image extensions
     stem = Path(filename).stem
-    for ext in [".jpg", ".png", ".jpeg"]:
+    for ext in [".jpg", ".png", ".jpeg", ".webp"]:
         img_path = MEDIA_DIR / (stem + ext)
         if img_path.exists():
-            return FileResponse(img_path)
+            return FileResponse(img_path, headers=MEDIA_CACHE_HEADERS)
             
     raise HTTPException(status_code=404, detail="Media file not found")
 
@@ -74,7 +81,7 @@ app.mount("/media", StaticFiles(directory=str(MEDIA_DIR)), name="media")
 if (DIST_DIR / "assets").exists():
     app.mount("/assets", StaticFiles(directory=str(DIST_DIR / "assets")), name="dist-assets")
 
-# Serve legacy static assets
+# Serve legacy static assets if present
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
@@ -83,15 +90,12 @@ def serve_index():
     dist_index = DIST_DIR / "index.html"
     if dist_index.exists():
         return FileResponse(dist_index)
-    index_file = STATIC_DIR / "index.html"
-    if index_file.exists():
-        return FileResponse(index_file)
     ref_file = PROJECT_ROOT / "reference" / "prawko.html"
     if ref_file.exists():
         return FileResponse(ref_file)
     return {"message": "Prawko B MVP API Running"}
 
-# SPA Fallback for client-side routes (e.g., /nauka, /analiza, /review)
+# SPA Fallback for client-side routes (e.g., /nauka, /analiza, /review, /exam)
 @app.get("/{full_path:path}")
 def serve_spa_fallback(full_path: str):
     # Do not catch API, auth, media, or existing mounted routes
@@ -106,7 +110,7 @@ def serve_spa_fallback(full_path: str):
     dist_index = DIST_DIR / "index.html"
     if dist_index.exists():
         return FileResponse(dist_index)
-    index_file = STATIC_DIR / "index.html"
-    if index_file.exists():
-        return FileResponse(index_file)
+    ref_file = PROJECT_ROOT / "reference" / "prawko.html"
+    if ref_file.exists():
+        return FileResponse(ref_file)
     raise HTTPException(status_code=404, detail="Not Found")

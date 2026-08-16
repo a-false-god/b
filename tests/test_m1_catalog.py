@@ -134,3 +134,17 @@ def test_reimport_diff_safety(db_conn):
 
     cursor.execute("SELECT COUNT(*) FROM answer_events WHERE question_id = ?", (q_id,))
     assert cursor.fetchone()[0] >= 1, "Answer events were modified or removed on re-import!"
+
+
+def test_migration_008_secondary_indexes(db_conn):
+    """Verify that migration 008 indexes are created and present in SQLite schema."""
+    from app.db import init_db
+    init_db()
+    cursor = db_conn.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='index'")
+    all_indexes = {row[0] for row in cursor.fetchall()}
+
+    assert "idx_qc_source" in all_indexes, "idx_qc_source missing from SQLite indexes"
+    assert "idx_questions_scope_points" in all_indexes, "idx_questions_scope_points missing from SQLite indexes"
+    assert "idx_events_user_qid_id" in all_indexes, "idx_events_user_qid_id missing from SQLite indexes"
+

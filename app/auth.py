@@ -240,20 +240,34 @@ def get_current_user_id(request: Request) -> Optional[int]:
         return None
 
     now_iso = datetime.now(timezone.utc).isoformat()
+    # Specific token is expired: prune this single token
     if row["expires_at"] < now_iso:
         cursor.execute("DELETE FROM user_sessions WHERE token = ?", (token,))
         conn.commit()
         conn.close()
         return None
 
-    # Lazy opportunistic cleanup of other expired sessions (1 in 50 chance)
-    if secrets.randbelow(50) == 0:
-        cursor.execute("DELETE FROM user_sessions WHERE expires_at < ?", (now_iso,))
-        conn.commit()
-
     user_id = row["user_id"]
     conn.close()
     return user_id
+
+
+def prune_expired_sessions() -> int:
+    """
+    Prunes all expired sessions from SQLite.
+    Invoked during server startup and scheduled maintenance (F-07).
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        now_iso = datetime.now(timezone.utc).isoformat()
+        cursor.execute("DELETE FROM user_sessions WHERE expires_at < ?", (now_iso,))
+        pruned = cursor.rowcount
+        conn.commit()
+        conn.close()
+        return pruned
+    except Exception:
+        return 0
 
 
 def require_user_id(request: Request) -> int:
