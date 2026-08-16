@@ -1,0 +1,38 @@
+services:
+  prawko:
+    image: prawko:latest
+    container_name: prawko-b
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      # Baza SQLite (data/prawko.sqlite) — trwałość poza kontenerem
+      - ./data:/app/data
+      # Media (MP4/JPG) — montowane read-only
+      - ./media:/app/media:ro
+    environment:
+      - TZ=Europe/Warsaw
+    env_file:
+      - .env
+    mem_limit: 512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: prawko-caddy
+    network_mode: host
+    mem_limit: 64m
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    depends_on:
+      - prawko
+
+volumes:
+  caddy_data:
+  caddy_config:

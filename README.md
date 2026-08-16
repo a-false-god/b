@@ -138,8 +138,10 @@ Aplikacja jest zoptymalizowana do pracy na bezpłatnych instancjach chmurowych (
    ```
 4. **Uruchomienie**:
    ```bash
-   docker compose up -d --build
+   docker compose -f docker-compose.prod.yml up -d
    ```
+
+> 📖 **Instrukcja operacyjna:** Pełny proces aktualizacji obrazów (bez kompilacji na serwerze), procedurę rollbacku bazy, rotację klucza `REGISTRATION_KEY` oraz diagnostykę na instancjach 1 GB RAM opisuje **[ops/RUNBOOK.md](ops/RUNBOOK.md)**.
 
 ---
 
