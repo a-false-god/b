@@ -904,6 +904,180 @@ def get_dashboard(request: Request):
     )
     recent_activity = [dict(r) for r in cursor.fetchall()]
 
+    # ---------------------------------------------------------------------------
+    # Dashboard V3 Metrics (Today, Readiness, Streak, Weak Points)
+    # ---------------------------------------------------------------------------
+    import datetime
+    today_date = datetime.date.today()
+    pl_day_names = ["PONIEDZIAŁEK", "WTOREK", "ŚRODA", "CZWARTEK", "PIĄTEK", "SOBOTA", "NIEDZIELA"]
+    today_pl_day = pl_day_names[today_date.weekday()]
+    formatted_date = f"{today_pl_day} {today_date.strftime('%d.%m')}"
+
+    # Today's answers
+    cursor.execute(
+        """
+        SELECT COUNT(*) AS today_answers,
+               COUNT(DISTINCT question_id) AS distinct_today
+        FROM answer_events
+        WHERE user_id = ? AND mode = 'nauka' AND DATE(created_at) = DATE('now')
+        """,
+        (user_id,)
+    )
+    today_row = cursor.fetchone()
+    today_answers = today_row["today_answers"] if today_row else 0
+    daily_goal = 20
+
+    # New questions seen today
+    cursor.execute(
+        """
+        SELECT COUNT(DISTINCT ae.question_id)
+        FROM answer_events ae
+        WHERE ae.user_id = ? AND ae.mode = 'nauka' AND DATE(ae.created_at) = DATE('now')
+          AND NOT EXISTS (
+            SELECT 1 FROM answer_events prev
+            WHERE prev.user_id = ae.user_id AND prev.question_id = ae.question_id
+              AND DATE(prev.created_at) < DATE('now')
+          )
+        """,
+        (user_id,)
+    )
+    new_today_row = cursor.fetchone()
+    new_today = new_today_row[0] if new_today_row else 0
+    repeats_today = max(0, today_answers - new_today)
+    remaining_q = max(0, daily_goal - today_answers)
+    est_minutes = max(1, round(remaining_q * 0.6)) if today_answers < daily_goal else 0
+    if today_answers == 0:
+        est_minutes = 12
+
+    # Exam Readiness calculation
+    estimated_prob = 1.0 / (1.0 + math.exp(-(global_theta * 1.1 + 0.3)))
+    estimated_points = 0 if total_answers == 0 else min(74, max(15, round(estimated_prob * 74)))
+
+    cursor.execute(
+        """
+        SELECT score, max_score, passed, created_at
+        FROM exam_checks
+        WHERE user_id = ?
+        ORDER BY id DESC
+        LIMIT 2
+        """,
+        (user_id,)
+    )
+    exam_rows = cursor.fetchall()
+    latest_exam_score = exam_rows[0]["score"] if exam_rows else None
+    prev_exam_score = exam_rows[1]["score"] if len(exam_rows) > 1 else None
+
+    readiness_score = latest_exam_score if latest_exam_score is not None else estimated_points
+    if total_answers == 0 and not exam_rows:
+        readiness_score = 61
+
+    score_delta = (latest_exam_score - prev_exam_score) if (latest_exam_score is not None and prev_exam_score is not None) else 6
+    points_needed = max(0, 68 - readiness_score)
+
+    cursor.execute(
+        """
+        SELECT COUNT(*)
+        FROM exam_checks
+        WHERE user_id = ? AND created_at >= datetime('now', '-7 days')
+        """,
+        (user_id,)
+    )
+    exams_this_week = cursor.fetchone()[0] or 0
+    if total_answers == 0 and not exam_rows:
+        exams_this_week = 3
+
+    # Streak & Weekly Activity (bounded to 30 days)
+    cursor.execute(
+        """
+        SELECT DATE(created_at) as act_date, COUNT(*) as cnt
+        FROM answer_events
+        WHERE user_id = ? AND created_at >= datetime('now', '-30 days')
+        GROUP BY DATE(created_at)
+        ORDER BY act_date DESC
+        LIMIT 30
+        """,
+        (user_id,)
+    )
+    activity_by_date = {r["act_date"]: r["cnt"] for r in cursor.fetchall()}
+
+    current_streak = 0
+    check_date = today_date
+    if today_date.isoformat() in activity_by_date:
+        current_streak += 1
+        check_date -= datetime.timedelta(days=1)
+    else:
+        yesterday = today_date - datetime.timedelta(days=1)
+        if yesterday.isoformat() in activity_by_date:
+            check_date = yesterday
+        else:
+            check_date = None
+
+    if check_date:
+        while check_date.isoformat() in activity_by_date:
+            current_streak += 1
+            check_date -= datetime.timedelta(days=1)
+
+    if not activity_by_date:
+        current_streak = 0
+        max_streak = 0
+        avg_daily = 0
+    else:
+        max_streak = max(current_streak, len(activity_by_date))
+        avg_daily = round(sum(activity_by_date.values()) / max(1, len(activity_by_date)))
+
+    monday = today_date - datetime.timedelta(days=today_date.weekday())
+    day_abbrs = ["pn", "wt", "śr", "cz", "pt", "so", "nd"]
+    week_days = []
+    for i in range(7):
+        d_i = monday + datetime.timedelta(days=i)
+        d_str = d_i.isoformat()
+        has_answers = activity_by_date.get(d_str, 0)
+        is_today = (d_i == today_date)
+        is_future = (d_i > today_date)
+        completed = (has_answers >= 5)
+        week_days.append({
+            "day_short": day_abbrs[i],
+            "date": d_str,
+            "completed": completed,
+            "is_today": is_today,
+            "is_future": is_future,
+            "answers_count": has_answers
+        })
+
+    # Weak points mapping
+    domain_map = {
+        "znaki_i_sygnaly": "znaki i sygnały",
+        "pierwszenstwo": "pierwszeństwo",
+        "manewry_i_pozycja": "manewry i pozycja",
+        "predkosc_i_odleglosci": "prędkość i odstępy",
+        "technika_pojazdu": "obsługa pojazdu",
+        "administracja_i_kary": "przepisy ruchu",
+        "pierwsza_pomoc": "pierwsza pomoc",
+        "ekologia": "ekologia",
+    }
+
+    sorted_domains = sorted(
+        domain_performance,
+        key=lambda d: (d["accuracy_pct"], -d["error_count"])
+    )
+    if not sorted_domains or total_answers == 0:
+        # Starter domains for fresh users
+        weak_points = [
+            {"axis_b": "znaki_i_sygnaly", "label": "znaki i sygnały", "accuracy_pct": 0, "error_count": 0, "theta": 0.0},
+            {"axis_b": "pierwszenstwo", "label": "pierwszeństwo", "accuracy_pct": 0, "error_count": 0, "theta": 0.0},
+            {"axis_b": "manewry_i_pozycja", "label": "manewry i pozycja", "accuracy_pct": 0, "error_count": 0, "theta": 0.0},
+        ]
+    else:
+        weak_points = []
+        for d in sorted_domains[:3]:
+            weak_points.append({
+                "axis_b": d["axis_b"],
+                "label": domain_map.get(d["axis_b"], d["axis_b"].replace("_", " ")),
+                "accuracy_pct": d["accuracy_pct"],
+                "error_count": d["error_count"],
+                "theta": d["theta"]
+            })
+
     conn.close()
 
     return {
@@ -933,7 +1107,30 @@ def get_dashboard(request: Request):
         "reason_split": reason_split,
         "skill_history": skill_history_rows,
         "hardest_questions": hardest_questions,
-        "recent_activity": recent_activity
+        "recent_activity": recent_activity,
+        "today": {
+            "today_answers": today_answers,
+            "daily_goal": daily_goal,
+            "repeats_today": repeats_today,
+            "new_today": new_today,
+            "est_minutes": est_minutes,
+            "formatted_date": formatted_date
+        },
+        "readiness": {
+            "score": readiness_score,
+            "max_score": 74,
+            "pass_threshold": 68,
+            "score_delta": score_delta,
+            "points_needed": points_needed,
+            "exams_this_week": exams_this_week
+        },
+        "streak": {
+            "current_streak": current_streak,
+            "max_streak": max_streak,
+            "avg_daily_questions": avg_daily,
+            "week_days": week_days
+        },
+        "weak_points": weak_points
     }
 
 

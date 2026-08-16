@@ -13,19 +13,20 @@ interface NaukaViewProps {
   user: User | null
   onOpenAuth: (message?: string) => void
   onAnswerSubmitted?: () => void
+  initialAxisB?: string
 }
 
-export function NaukaView({ user, onOpenAuth, onAnswerSubmitted }: NaukaViewProps) {
-  const [learningMode, setLearningMode] = useState<"auto" | "drill">("auto")
+export function NaukaView({ user, onOpenAuth, onAnswerSubmitted, initialAxisB }: NaukaViewProps) {
+  const [learningMode, setLearningMode] = useState<"auto" | "drill">(initialAxisB ? "drill" : "auto")
   const [questions, setQuestions] = useState<Question[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
 
   // Filters for drill mode
-  const [showFilters, setShowFilters] = useState(false)
+  const [showFilters, setShowFilters] = useState(Boolean(initialAxisB))
   const [scopeFilter, setScopeFilter] = useState("")
   const [axisAFilter, setAxisAFilter] = useState("")
-  const [axisBFilter, setAxisBFilter] = useState("")
+  const [axisBFilter, setAxisBFilter] = useState(initialAxisB || "")
   const [searchQuery, setSearchQuery] = useState("")
 
   // Answering state

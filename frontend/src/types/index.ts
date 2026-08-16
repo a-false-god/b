@@ -97,6 +97,42 @@ export interface DashboardData {
     time_ms: number;
     created_at: string;
   }>;
+  today?: {
+    today_answers: number;
+    daily_goal: number;
+    repeats_today: number;
+    new_today: number;
+    est_minutes: number;
+    formatted_date: string;
+  };
+  readiness?: {
+    score: number;
+    max_score: number;
+    pass_threshold: number;
+    score_delta: number;
+    points_needed: number;
+    exams_this_week: number;
+  };
+  streak?: {
+    current_streak: number;
+    max_streak: number;
+    avg_daily_questions: number;
+    week_days: Array<{
+      day_short: string;
+      date: string;
+      completed: boolean;
+      is_today: boolean;
+      is_future: boolean;
+      answers_count: number;
+    }>;
+  };
+  weak_points?: Array<{
+    axis_b: string;
+    label: string;
+    accuracy_pct: number;
+    error_count: number;
+    theta: number;
+  }>;
 }
 
 export interface AnalyticsCoverage {

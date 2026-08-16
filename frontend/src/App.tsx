@@ -37,6 +37,7 @@ export function App() {
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authMessage, setAuthMessage] = useState<string | undefined>(undefined)
   const [examOpen, setExamOpen] = useState(false)
+  const [selectedDomain, setSelectedDomain] = useState<string | undefined>(undefined)
   const [theme, setTheme] = useState<"dark" | "light">(() => {
     try {
       const saved = localStorage.getItem("prawko_theme")
@@ -138,7 +139,10 @@ export function App() {
                   <DashboardView
                     user={user}
                     onOpenAuth={() => handleOpenAuth()}
-                    onNavigateToNauka={() => handleTabChange("nauka")}
+                    onNavigateToNauka={(filter) => {
+                      setSelectedDomain(filter?.axisB)
+                      handleTabChange("nauka")
+                    }}
                     onOpenExam={() => setExamOpen(true)}
                   />
                 )}
@@ -148,6 +152,7 @@ export function App() {
                     user={user}
                     onOpenAuth={handleOpenAuth}
                     onAnswerSubmitted={() => queryClient.invalidateQueries({ queryKey: ["dashboard"] })}
+                    initialAxisB={selectedDomain}
                   />
                 )}
 
