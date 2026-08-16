@@ -51,10 +51,11 @@ python tools/backup_db.py --restore data/backups/prawko_YYYYMMDD_HHMMSS.sqlite
 
 ---
 
-## Bezpieczeństwo i Kontrola Dostępu (Task S4)
-- **Ograniczanie częstotliwości żądań (Rate Limiting)**: Maksymalnie 5 prób uwierzytelnienia na minutę na adres IP (`429 Too Many Requests`).
+## Bezpieczeństwo i Kontrola Dostępu (Task S4 & Pre-Public Hardening)
+- **Trwałe sesje w SQLite (BE-01)**: Sesje użytkowników są trwale zapisywane w tabeli `user_sessions` (SQLite WAL) z automatyczną rotacją tokenów przy logowaniu i usuwaniem przy wylogowaniu. Sesje przeżywają restarty kontenera i serwera Uvicorn.
+- **Inteligentne ograniczanie częstotliwości żądań (Rate Limiting & BE-02)**: Maksymalnie 5 prób uwierzytelnienia na minutę na rzeczywisty adres IP klienta (`429 Too Many Requests`). Za proxy Caddy odczytywany jest nagłówek `X-Forwarded-For` wyłącznie od zaufanych peerów (loopback `127.0.0.1`, sieci prywatne/Docker Compose lub konfigurowalne przez `TRUSTED_PROXIES`). Próby fałszowania nagłówka z otwartego internetu są ignorowane.
 - **Ochrona przed enumeracją kont**: Identyczny czas odpowiedzi (poprzez stałoczasową weryfikację hasła atrapą) oraz identyczny komunikat błędu dla nieistniejącego użytkownika i błędnego hasła.
-- **Rotacja sesji i ciasteczka**: Pliki cookie sesji posiadają atrybuty `HttpOnly`, `SameSite=Lax`, `Max-Age=30 dni` oraz nowy token generowany przy każdym logowaniu z unieważnieniem starej sesji.
+- **Rotacja sesji i ciasteczka**: Pliki cookie sesji posiadają atrybuty `HttpOnly`, `SameSite=Lax`, `Max-Age=30 dni` oraz nowy kryptograficzny token generowany przy każdym logowaniu.
 - **CORS**: Ścisła polityka same-origin (brak zezwoleń dla domen obcych).
 
 ---

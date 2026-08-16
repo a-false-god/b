@@ -98,6 +98,11 @@ def serve_spa_fallback(full_path: str):
     if full_path.startswith(("api/", "auth/", "media/", "static/", "assets/")):
         raise HTTPException(status_code=404, detail="Not Found")
     
+    # Check if a static file in dist matches directly (e.g. manifest.json, icon.svg)
+    static_file = DIST_DIR / full_path
+    if static_file.is_file():
+        return FileResponse(static_file)
+
     dist_index = DIST_DIR / "index.html"
     if dist_index.exists():
         return FileResponse(dist_index)

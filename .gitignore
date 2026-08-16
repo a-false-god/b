@@ -6,14 +6,18 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
-dist/
+/dist/
 build/
 *.egg-info/
+
+!app/static/dist/
 
 # Virtual environments
 venv/
 env/
 .venv/
+.env
+
 
 # Node
 frontend/node_modules/

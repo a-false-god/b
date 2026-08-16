@@ -82,6 +82,10 @@ def init_db():
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_vision_review_decision ON vision_review(decision)")
 
+    migration_007_sql = PROJECT_ROOT / "tools" / "migrate_007.sql"
+    if migration_007_sql.exists():
+        cursor.executescript(migration_007_sql.read_text(encoding="utf-8"))
+
     # Ensure optional columns exist for schema evolution
     for col, col_type in [("content_hash", "TEXT"), ("needs_vision_review", "INTEGER DEFAULT 0")]:
         try:

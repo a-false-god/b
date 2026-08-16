@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#0d0d10"/>
+  <rect x="24" y="24" width="464" height="464" rx="96" fill="#16161a" stroke="#232329" stroke-width="8"/>
+  <!-- Car icon symbol -->
+  <path d="M120 320 L136 224 C140 200 160 184 184 184 L328 184 C352 184 372 200 376 224 L392 320 C404 324 416 336 416 352 L416 384 C416 396 408 400 396 400 L384 400 C372 400 364 392 364 380 L364 368 L148 368 L148 380 C148 392 140 400 128 400 L116 400 C104 400 96 396 96 384 L96 352 C96 336 108 324 120 320 Z" fill="#5E9FE8"/>
+  <circle cx="160" cy="336" r="22" fill="#fafafa"/>
+  <circle cx="352" cy="336" r="22" fill="#fafafa"/>
+  <path d="M164 224 L154 280 L358 280 L348 224 Z" fill="#0d0d10" opacity="0.85"/>
+</svg>

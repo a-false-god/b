@@ -306,7 +306,7 @@ function renderMedia(q) {
 
   const mediaUrl = `/media/${q.media}`;
   if (q.media_kind === 'video' || q.media.endsWith('.mp4') || q.media.endsWith('.wmv')) {
-    return `<video src="${mediaUrl}" playsinline preload="metadata" muted loop controls onerror="this.outerHTML='<div class=\\'media-fallback\\'>🎬 Plik wideo: ${q.media} (brak w katalogu media/)</div>'"></video>`;
+    return `<video src="${mediaUrl}" playsinline autoplay muted loop preload="auto" disablepictureinpicture class="no-controls" onerror="this.outerHTML='<div class=\\'media-fallback\\'>🎬 Plik wideo: ${q.media} (brak w katalogu media/)</div>'"></video>`;
   } else {
     return `<img src="${mediaUrl}" alt="Media do pytania" loading="lazy" onerror="this.outerHTML='<div class=\\'media-fallback\\'>🖼️ Plik graficzny: ${q.media} (brak w katalogu media/)</div>'" />`;
   }

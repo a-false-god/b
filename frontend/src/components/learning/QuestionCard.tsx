@@ -62,27 +62,29 @@ export function QuestionCard({
     : ""
 
   return (
-    <div className="w-full rounded-[12px] border border-border bg-card p-4 sm:p-6 transition-all">
+    <div className="w-full rounded-[14px] border border-border bg-card p-3.5 sm:p-6 transition-all overflow-hidden">
       {/* Hidden ARIA Live region for screen readers (§6 a11y) */}
       <div aria-live="polite" className="sr-only">
         {announcementText}
       </div>
 
-      {/* 1. Media Container (16:9, radius 12, hairline ring) */}
-      <MediaViewer media={question.media} mediaKind={question.media_kind} />
+      {/* 1. Media Container (16:9, radius 12, full-width on mobile) */}
+      <div className="-mx-3.5 -mt-3.5 sm:mx-0 sm:mt-0 mb-4 sm:mb-0">
+        <MediaViewer media={question.media} mediaKind={question.media_kind} />
+      </div>
 
-      {/* 2. Question Text as HERO: 23px / weight 700 / letter-spacing -0.015em, left-aligned, 16px below media */}
-      <div className="mt-4 max-h-[160px] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* 2. Question Text as HERO: fluid 17-23px, left-aligned, tight mobile margin */}
+      <div className="mt-0 sm:mt-4 max-h-[160px] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <h2
           ref={headingRef}
           tabIndex={-1}
-          className="text-[23px] font-bold tracking-[-0.015em] leading-[1.3] text-foreground text-left focus:outline-none"
+          className="text-[17px] sm:text-[23px] font-bold tracking-tight leading-[1.3] text-foreground text-left focus:outline-none"
         >
           {question.q_pl}
         </h2>
 
         {/* Meta line directly below question */}
-        <p className="text-[12.5px] text-muted-foreground font-normal select-none mt-1.5 text-left">
+        <p className="text-[11.5px] sm:text-[12.5px] text-muted-foreground font-normal select-none mt-1 sm:mt-1.5 text-left">
           {metaLine}
         </p>
       </div>

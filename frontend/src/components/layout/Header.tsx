@@ -22,8 +22,8 @@ export function Header({
   streakDays = 3,
 }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/90 backdrop-blur-md xl:hidden">
-      <div className="max-w-[560px] mx-auto px-4 h-11 sm:h-12 flex items-center justify-between gap-3">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/90 backdrop-blur-md xl:hidden pt-[env(safe-area-inset-top,0px)]">
+      <div className="max-w-[560px] mx-auto px-3.5 sm:px-4 h-11 sm:h-12 flex items-center justify-between gap-2 sm:gap-3">
         {/* Wordmark: Mono "PRAWKO//B" */}
         <div
           className="flex items-center gap-1.5 cursor-pointer select-none group"

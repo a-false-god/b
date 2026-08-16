@@ -104,7 +104,7 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
-        <div className="min-h-screen flex flex-col bg-background text-foreground ambient-shell selection:bg-accent selection:text-accent-foreground">
+        <div className="min-h-[100dvh] flex flex-col bg-background text-foreground ambient-shell selection:bg-accent selection:text-accent-foreground">
           {/* Desktop Fixed Left Sidebar (≥1200px) */}
           <Sidebar
             currentTab={currentTab}
@@ -131,7 +131,7 @@ export function App() {
           />
 
           {/* Main Content Area — Centered 480–540px column (offset by sidebar on desktop) */}
-          <main className="flex-1 w-full max-w-[540px] mx-auto xl:max-w-[756px] xl:pl-[216px] px-3.5 sm:px-4 py-2 sm:py-3 pb-20 sm:pb-24 xl:pb-8">
+          <main className="flex-1 w-full max-w-[540px] mx-auto xl:max-w-[756px] xl:pl-[216px] px-3 sm:px-4 py-2 sm:py-3 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] sm:pb-24 xl:pb-8">
             <div className="w-full max-w-[540px] mx-auto">
               <ErrorBoundary>
                 {currentTab === "dashboard" && (

@@ -17,10 +17,13 @@ export function MediaViewer({ media, mediaKind, className = "" }: MediaViewerPro
     setHasError(false)
   }
 
+  const baseClasses =
+    "w-full aspect-video rounded-t-[12px] rounded-b-none sm:rounded-[12px] border-x-0 border-t-0 border-b border-border sm:border sm:border-border overflow-hidden"
+
   if (!media) {
     return (
       <div
-        className={`w-full aspect-video rounded-[12px] border border-border bg-secondary/30 flex flex-col items-center justify-center text-muted-foreground select-none p-4 text-center ${className}`}
+        className={`${baseClasses} bg-secondary/30 flex flex-col items-center justify-center text-muted-foreground select-none p-4 text-center ${className}`}
       >
         <ImageIcon className="w-8 h-8 mb-2 text-muted-foreground/50" />
         <span className="text-xs font-mono font-medium text-muted-foreground">
@@ -40,7 +43,7 @@ export function MediaViewer({ media, mediaKind, className = "" }: MediaViewerPro
   if (hasError) {
     return (
       <div
-        className={`w-full aspect-video rounded-[12px] border border-border bg-secondary/40 flex flex-col items-center justify-center text-muted-foreground select-none p-4 text-center ${className}`}
+        className={`${baseClasses} bg-secondary/40 flex flex-col items-center justify-center text-muted-foreground select-none p-4 text-center ${className}`}
       >
         {isVideo ? (
           <Film className="w-8 h-8 mb-2 text-accent/70" />
@@ -59,20 +62,23 @@ export function MediaViewer({ media, mediaKind, className = "" }: MediaViewerPro
 
   return (
     <div
-      className={`w-full aspect-video rounded-[12px] overflow-hidden border border-border bg-black/90 flex items-center justify-center relative ${className}`}
+      className={`${baseClasses} bg-black/90 flex items-center justify-center relative ${className}`}
     >
       {isVideo ? (
         <video
           key={media}
           src={mediaUrl}
           playsInline
-          preload="metadata"
+          preload="auto"
           autoPlay
           muted
           loop
-          controls
-          className="w-full h-full object-contain"
+          disablePictureInPicture
+          className="w-full h-full object-contain pointer-events-none select-none"
           onError={() => setHasError(true)}
+          onLoadedData={(e) => {
+            e.currentTarget.play().catch(() => {})
+          }}
         />
       ) : (
         <img

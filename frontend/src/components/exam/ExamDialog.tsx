@@ -161,7 +161,7 @@ export function ExamDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         hideCloseButton
-        className="fixed inset-0 w-screen h-screen max-w-none max-h-none rounded-none border-none bg-background/95 backdrop-blur-md flex flex-col p-4 sm:p-6 overflow-y-auto z-50 animate-fade-in-up"
+        className="fixed inset-0 w-screen h-[100dvh] max-w-none max-h-none rounded-none border-none bg-background/95 backdrop-blur-md flex flex-col p-4 sm:p-6 overflow-y-auto z-50 animate-fade-in-up"
       >
         <div className="w-full max-w-[540px] mx-auto flex-1 flex flex-col justify-between py-2">
           {/* Header Bar */}
@@ -313,8 +313,14 @@ export function ExamDialog({
                 </span>
               </div>
 
-              {/* Media Container */}
-              <MediaViewer media={currentQ.media} mediaKind={currentQ.media_kind} />
+              {/* Media Container (full-width on mobile) */}
+              <div className="-mx-4 sm:mx-0">
+                <MediaViewer
+                  media={currentQ.media}
+                  mediaKind={currentQ.media_kind}
+                  className="rounded-none sm:rounded-[12px]"
+                />
+              </div>
 
               {/* Question Text */}
               <h3 className="text-base sm:text-lg font-bold leading-snug text-foreground">
@@ -324,17 +330,17 @@ export function ExamDialog({
               {/* Answer Options — NO semantic correctness states during exam */}
               <div className="grid gap-2.5 pt-1">
                 {currentQ.type === "TN" ? (
-                  <>
+                  <div className="grid grid-cols-2 gap-2.5">
                     <button
                       type="button"
                       onClick={() => handleSelectAnswer("T")}
-                      className="group flex items-center min-h-[64px] py-3.5 px-4 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-colors active:scale-[0.99] text-left select-none"
+                      className="group flex items-center justify-center min-h-[54px] sm:min-h-[64px] py-3 px-3.5 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-colors active:scale-[0.98] text-center select-none"
                     >
-                      <div className="flex items-center gap-3.5 w-full">
-                        <span className="hidden [@media(pointer:fine)]:inline-flex w-[30px] h-[30px] rounded-[8px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent items-center justify-center font-mono font-bold text-xs shrink-0 select-none">
+                      <div className="flex items-center justify-center gap-2 w-full">
+                        <span className="hidden [@media(pointer:fine)]:inline-flex w-[28px] h-[28px] rounded-[7px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent items-center justify-center font-mono font-bold text-xs shrink-0 select-none">
                           T
                         </span>
-                        <span className="text-type-body font-semibold text-foreground flex-1">
+                        <span className="font-bold text-base sm:text-lg tracking-wider text-foreground">
                           Tak
                         </span>
                       </div>
@@ -342,18 +348,18 @@ export function ExamDialog({
                     <button
                       type="button"
                       onClick={() => handleSelectAnswer("N")}
-                      className="group flex items-center min-h-[64px] py-3.5 px-4 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-colors active:scale-[0.99] text-left select-none"
+                      className="group flex items-center justify-center min-h-[54px] sm:min-h-[64px] py-3 px-3.5 rounded-[12px] border-[1.5px] border-border bg-card text-foreground hover:border-accent transition-colors active:scale-[0.98] text-center select-none"
                     >
-                      <div className="flex items-center gap-3.5 w-full">
-                        <span className="hidden [@media(pointer:fine)]:inline-flex w-[30px] h-[30px] rounded-[8px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent items-center justify-center font-mono font-bold text-xs shrink-0 select-none">
+                      <div className="flex items-center justify-center gap-2 w-full">
+                        <span className="hidden [@media(pointer:fine)]:inline-flex w-[28px] h-[28px] rounded-[7px] border border-border bg-secondary text-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent items-center justify-center font-mono font-bold text-xs shrink-0 select-none">
                           N
                         </span>
-                        <span className="text-type-body font-semibold text-foreground flex-1">
+                        <span className="font-bold text-base sm:text-lg tracking-wider text-foreground">
                           Nie
                         </span>
                       </div>
                     </button>
-                  </>
+                  </div>
                 ) : (
                   <>
                     <button

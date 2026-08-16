@@ -1,17 +1,22 @@
 """
 Authentication & Session Management for Prawko B MVP.
-Uses Argon2id hashing (with PBKDF2 fallback) and encrypted/signed session cookies.
-Includes anti-enumeration timing equalization, in-memory IP rate limiting, and session rotation.
+Uses Argon2id hashing (with PBKDF2 fallback) and persistent SQLite session tokens (BE-01).
+Includes anti-enumeration timing equalization, real client IP extraction behind trusted proxies (BE-02),
+in-memory rate limiting per real client IP, and session rotation.
 """
 
 import base64
 import collections
 import hashlib
+import ipaddress
 import os
 import secrets
 import time
+from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, List
 from fastapi import Request, Response, HTTPException, status
+
+from app.db import get_db_connection
 
 try:
     from argon2 import PasswordHasher
@@ -20,7 +25,6 @@ try:
 except ImportError:
     USE_ARGON2 = False
 
-SESSIONS: dict[str, int] = {}
 SESSION_COOKIE_NAME = "prawko_session"
 SESSION_MAX_AGE = 86400 * 30  # 30 days
 
@@ -89,14 +93,72 @@ def verify_password_or_dummy(password: str, stored_hash: Optional[str]) -> bool:
     return verify_password(password, stored_hash)
 
 
+_DEFAULT_TRUSTED_NETWORKS = [
+    ipaddress.ip_network("127.0.0.0/8"),
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+    ipaddress.ip_network("::1/128"),
+    ipaddress.ip_network("fc00::/7"),
+    ipaddress.ip_network("fe80::/10"),
+]
+
+
+def is_trusted_proxy(host: str) -> bool:
+    """
+    Checks whether direct connection peer is a trusted proxy (loopback, private network, or TRUSTED_PROXIES).
+    """
+    if not host or host in ("unknown", "testclient"):
+        return True
+    if host in ("127.0.0.1", "::1", "localhost"):
+        return True
+
+    custom_trusted = os.environ.get("TRUSTED_PROXIES", "").strip()
+    if custom_trusted:
+        trusted_entries = [t.strip() for t in custom_trusted.split(",") if t.strip()]
+        for entry in trusted_entries:
+            if host == entry:
+                return True
+            try:
+                if ipaddress.ip_address(host) in ipaddress.ip_network(entry, strict=False):
+                    return True
+            except ValueError:
+                pass
+
+    try:
+        ip_obj = ipaddress.ip_address(host)
+        return any(ip_obj in net for net in _DEFAULT_TRUSTED_NETWORKS) or ip_obj.is_loopback
+    except ValueError:
+        return False
+
+
+def get_client_ip(request: Request) -> str:
+    """
+    Extracts real client IP safely (BE-02).
+    Reads X-Forwarded-For ONLY when direct peer is in trusted proxies.
+    If direct peer is untrusted, XFF is ignored to prevent IP spoofing.
+    """
+    peer_ip = "unknown"
+    if request.client and request.client.host:
+        peer_ip = request.client.host
+
+    if is_trusted_proxy(peer_ip):
+        xff = request.headers.get("x-forwarded-for")
+        if xff:
+            # First non-trusted address from the left is original client
+            ips = [ip.strip() for ip in xff.split(",") if ip.strip()]
+            if ips:
+                return ips[0]
+
+    return peer_ip
+
+
 def check_rate_limit(request: Request, action: str = "auth"):
     """
-    In-memory IP rate limiter. Allows max 5 attempts per minute per IP.
+    In-memory IP rate limiter keyed on real client IP (BE-02). Allows max 5 attempts per minute per IP.
     Raises HTTPException 429 when limit exceeded.
     """
-    client_ip = "unknown"
-    if request.client and request.client.host:
-        client_ip = request.client.host
+    client_ip = get_client_ip(request)
 
     key = f"{action}:{client_ip}"
     now = time.time()
@@ -122,17 +184,28 @@ def reset_rate_limits():
 
 def create_session(user_id: int, response: Response, request: Optional[Request] = None) -> str:
     """
-    Create a new session token and set HTTP-only cookie.
+    Create a new persistent session in SQLite (BE-01) and set HTTP-only cookie.
     Rotates session ID if a prior session token exists in request cookies.
     """
-    # Rotate session: invalidate old session token if present
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Rotate session: invalidate old session token from SQLite if present
     if request:
         old_token = request.cookies.get(SESSION_COOKIE_NAME)
-        if old_token and old_token in SESSIONS:
-            del SESSIONS[old_token]
+        if old_token:
+            cursor.execute("DELETE FROM user_sessions WHERE token = ?", (old_token,))
 
     token = secrets.token_urlsafe(32)
-    SESSIONS[token] = user_id
+    expires_at = (datetime.now(timezone.utc) + timedelta(seconds=SESSION_MAX_AGE)).isoformat()
+
+    cursor.execute(
+        "INSERT INTO user_sessions (token, user_id, expires_at) VALUES (?, ?, ?)",
+        (token, user_id, expires_at)
+    )
+    conn.commit()
+    conn.close()
+
     response.set_cookie(
         key=SESSION_COOKIE_NAME,
         value=token,
@@ -144,16 +217,43 @@ def create_session(user_id: int, response: Response, request: Optional[Request] 
 
 
 def get_current_user_id(request: Request) -> Optional[int]:
-    """Retrieve current user_id from session cookie or header."""
+    """
+    Retrieve current user_id from persistent SQLite session table (BE-01) by cookie or header.
+    Lazily prunes expired session rows on access.
+    """
     token = request.cookies.get(SESSION_COOKIE_NAME)
     if not token:
         auth_hdr = request.headers.get("Authorization")
         if auth_hdr and auth_hdr.startswith("Bearer "):
             token = auth_hdr.split(" ", 1)[1]
 
-    if token and token in SESSIONS:
-        return SESSIONS[token]
-    return None
+    if not token:
+        return None
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id, expires_at FROM user_sessions WHERE token = ?", (token,))
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return None
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    if row["expires_at"] < now_iso:
+        cursor.execute("DELETE FROM user_sessions WHERE token = ?", (token,))
+        conn.commit()
+        conn.close()
+        return None
+
+    # Lazy opportunistic cleanup of other expired sessions (1 in 50 chance)
+    if secrets.randbelow(50) == 0:
+        cursor.execute("DELETE FROM user_sessions WHERE expires_at < ?", (now_iso,))
+        conn.commit()
+
+    user_id = row["user_id"]
+    conn.close()
+    return user_id
 
 
 def require_user_id(request: Request) -> int:
@@ -168,8 +268,17 @@ def require_user_id(request: Request) -> int:
 
 
 def destroy_session(request: Request, response: Response):
-    """Remove session cookie and delete session from store."""
+    """Remove session cookie and delete session row from SQLite (BE-01)."""
     token = request.cookies.get(SESSION_COOKIE_NAME)
-    if token in SESSIONS:
-        del SESSIONS[token]
+    if not token:
+        auth_hdr = request.headers.get("Authorization")
+        if auth_hdr and auth_hdr.startswith("Bearer "):
+            token = auth_hdr.split(" ", 1)[1]
+
+    if token:
+        conn = get_db_connection()
+        conn.execute("DELETE FROM user_sessions WHERE token = ?", (token,))
+        conn.commit()
+        conn.close()
+
     response.delete_cookie(SESSION_COOKIE_NAME)

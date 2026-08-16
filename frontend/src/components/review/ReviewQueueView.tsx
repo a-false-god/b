@@ -98,19 +98,19 @@ export function ReviewQueueView() {
   }
 
   return (
-    <div className="space-y-3.5 animate-fade-in-up pb-8">
+    <div className="space-y-2.5 sm:space-y-3.5 animate-fade-in-up pb-6 sm:pb-8">
       {/* 1. Header with title, subtitle, and "zostało N" counter */}
-      <div className="flex items-start justify-between gap-3 pt-1 pb-0.5">
-        <div className="space-y-0.5">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+      <div className="flex items-center justify-between gap-3 pt-0.5 pb-0.5">
+        <div className="space-y-0.5 min-w-0">
+          <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground truncate">
             Kolejka weryfikacji
           </h1>
-          <p className="text-xs text-muted-foreground font-sans select-none">
+          <p className="text-[11px] sm:text-xs text-muted-foreground font-sans select-none leading-snug">
             Niska pewność klasyfikacji — zatwierdź lub popraw osie.
           </p>
         </div>
         {queue.length > 0 && (
-          <div className="text-xs font-mono text-muted-foreground select-none pt-1 shrink-0">
+          <div className="text-xs font-mono text-muted-foreground select-none shrink-0 bg-secondary/60 px-2 py-1 rounded-md border border-border/50">
             zostało <strong className="text-foreground tabular-nums font-bold">{queue.length}</strong>
           </div>
         )}
@@ -127,47 +127,42 @@ export function ReviewQueueView() {
           </CardContent>
         </Card>
       ) : (
-        <Card className="rounded-[12px] border border-border bg-card overflow-hidden">
-          <CardContent className="p-4 sm:p-5 space-y-3.5">
-            {/* Meta top in faint mono: "ID 610 · T/N · KAT B" */}
-            <div className="text-[11px] font-mono text-faint tracking-wider uppercase select-none">
-              ID {currentItem.id} · {currentItem.type === "TN" ? "T/N" : currentItem.type || "ABC"} · KAT B
-            </div>
-
-            {/* Media thumbnail */}
-            {currentItem.media ? (
+        <Card className="rounded-[14px] border border-border bg-card overflow-hidden">
+          <CardContent className="p-3.5 sm:p-5 space-y-2.5 sm:space-y-3.5">
+            {/* 1. Full-width Media Container at top */}
+            <div className="-mx-3.5 -mt-3.5 sm:mx-0 sm:mt-0 mb-3 sm:mb-0">
               <MediaViewer
                 media={currentItem.media}
                 mediaKind={currentItem.media_kind}
-                className="max-h-[220px]"
               />
-            ) : (
-              <div className="w-full aspect-video rounded-[12px] border border-border bg-secondary/30 flex items-center justify-center text-muted-foreground select-none">
-                <span className="text-xs font-mono text-faint">Brak materiału wizualnego</span>
-              </div>
-            )}
+            </div>
+
+            {/* Meta top in faint mono: "ID 610 · T/N · KAT B" */}
+            <div className="text-[10px] sm:text-[11px] font-mono text-faint tracking-wider uppercase select-none">
+              ID {currentItem.id} · {currentItem.type === "TN" ? "T/N" : currentItem.type || "ABC"} · KAT B
+            </div>
 
             {/* Question Text */}
-            <h2 className="text-base sm:text-[17px] font-bold text-foreground leading-snug">
+            <h2 className="text-[14.5px] sm:text-[17px] font-bold text-foreground leading-snug">
               {currentItem.q_pl}
             </h2>
 
             {/* Suggestions with hairline confidence tracks */}
-            <div className="space-y-3 pt-1">
+            <div className="space-y-2 pt-0.5">
               {/* Oś A */}
-              <div className="space-y-1.5 select-none">
-                <div className="flex items-baseline justify-between text-xs">
+              <div className="space-y-1 select-none">
+                <div className="flex items-baseline justify-between text-[11px] sm:text-xs">
                   <span className="text-muted-foreground font-sans">Oś A · poznawcza</span>
-                  <div className="flex items-baseline gap-3">
+                  <div className="flex items-baseline gap-2">
                     <span className="font-bold text-foreground font-sans">
                       {currentItem.sugg_a || "analiza"}
                     </span>
-                    <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+                    <span className="font-mono text-[10px] sm:text-[11px] text-muted-foreground tabular-nums">
                       {((currentItem.conf_a ?? 0.6) * 100).toFixed(0)}%
                     </span>
                   </div>
                 </div>
-                <div className="h-[2.5px] w-full rounded-full bg-secondary/80 overflow-hidden">
+                <div className="h-[2px] w-full rounded-full bg-secondary overflow-hidden">
                   <div
                     className="h-full bg-accent rounded-full transition-all"
                     style={{ width: `${(currentItem.conf_a ?? 0.6) * 100}%` }}
@@ -176,19 +171,19 @@ export function ReviewQueueView() {
               </div>
 
               {/* Oś B */}
-              <div className="space-y-1.5 select-none">
-                <div className="flex items-baseline justify-between text-xs">
+              <div className="space-y-1 select-none">
+                <div className="flex items-baseline justify-between text-[11px] sm:text-xs">
                   <span className="text-muted-foreground font-sans">Oś B · domena</span>
-                  <div className="flex items-baseline gap-3">
+                  <div className="flex items-baseline gap-2">
                     <span className="font-bold text-foreground font-sans">
                       {currentItem.sugg_b || "pierwszeństwo"}
                     </span>
-                    <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+                    <span className="font-mono text-[10px] sm:text-[11px] text-muted-foreground tabular-nums">
                       {((currentItem.conf_b ?? 0.6) * 100).toFixed(0)}%
                     </span>
                   </div>
                 </div>
-                <div className="h-[2.5px] w-full rounded-full bg-secondary/80 overflow-hidden">
+                <div className="h-[2px] w-full rounded-full bg-secondary overflow-hidden">
                   <div
                     className="h-full bg-accent rounded-full transition-all"
                     style={{ width: `${(currentItem.conf_b ?? 0.6) * 100}%` }}
@@ -197,15 +192,15 @@ export function ReviewQueueView() {
               </div>
             </div>
 
-            {/* Action Buttons: Inverted B/W Accept, Secondary Popraw, Secondary Pomiń */}
-            <div className="pt-2 grid grid-cols-3 gap-2">
+            {/* Action Buttons: Touch-first large targets */}
+            <div className="pt-1.5 grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => handleAction(1)}
                 disabled={submitting}
-                className="flex items-center justify-center gap-2 h-10 px-3 rounded-[8px] bg-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold text-xs select-none disabled:opacity-50"
+                className="flex items-center justify-center gap-1.5 h-11 sm:h-10 px-2 rounded-[10px] bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98] transition-all font-semibold text-xs sm:text-sm select-none disabled:opacity-50"
               >
-                <kbd className="inline-flex items-center justify-center w-4 h-4 rounded-[4px] bg-primary-foreground/20 text-primary-foreground font-mono text-[10px] font-bold">
+                <kbd className="hidden sm:inline-flex items-center justify-center w-4 h-4 rounded-[4px] bg-primary-foreground/20 text-primary-foreground font-mono text-[10px] font-bold">
                   1
                 </kbd>
                 <span>Akceptuj</span>
@@ -215,9 +210,9 @@ export function ReviewQueueView() {
                 type="button"
                 onClick={() => handleAction(2)}
                 disabled={submitting}
-                className="flex items-center justify-center gap-2 h-10 px-3 rounded-[8px] border border-border bg-secondary hover:bg-secondary/80 text-foreground transition-colors font-medium text-xs select-none disabled:opacity-50"
+                className="flex items-center justify-center gap-1.5 h-11 sm:h-10 px-2 rounded-[10px] border border-border bg-secondary hover:bg-secondary/80 active:scale-[0.98] text-foreground transition-all font-medium text-xs sm:text-sm select-none disabled:opacity-50"
               >
-                <kbd className="inline-flex items-center justify-center w-4 h-4 rounded-[4px] bg-background border border-border text-muted-foreground font-mono text-[10px] font-bold">
+                <kbd className="hidden sm:inline-flex items-center justify-center w-4 h-4 rounded-[4px] bg-background border border-border text-muted-foreground font-mono text-[10px] font-bold">
                   2
                 </kbd>
                 <span>Popraw</span>
@@ -227,9 +222,9 @@ export function ReviewQueueView() {
                 type="button"
                 onClick={() => handleAction(3)}
                 disabled={submitting}
-                className="flex items-center justify-center gap-2 h-10 px-3 rounded-[8px] border border-border bg-secondary hover:bg-secondary/80 text-foreground transition-colors font-medium text-xs select-none disabled:opacity-50"
+                className="flex items-center justify-center gap-1.5 h-11 sm:h-10 px-2 rounded-[10px] border border-border bg-secondary hover:bg-secondary/80 active:scale-[0.98] text-foreground transition-all font-medium text-xs sm:text-sm select-none disabled:opacity-50"
               >
-                <kbd className="inline-flex items-center justify-center w-4 h-4 rounded-[4px] bg-background border border-border text-muted-foreground font-mono text-[10px] font-bold">
+                <kbd className="hidden sm:inline-flex items-center justify-center w-4 h-4 rounded-[4px] bg-background border border-border text-muted-foreground font-mono text-[10px] font-bold">
                   3
                 </kbd>
                 <span>Pomiń</span>

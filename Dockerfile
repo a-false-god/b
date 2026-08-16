@@ -43,5 +43,5 @@ RUN mkdir -p /app/data /app/media
 
 EXPOSE 8000
 
-# Jeden worker: BackgroundTasks i sesje żyją w procesie (patrz app/main.py)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# Jeden worker: BackgroundTasks żyją w procesie (patrz app/main.py), proxy-headers dla Caddy (BE-02)
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips", "127.0.0.1,::1,172.16.0.0/12,10.0.0.0/8,192.168.0.0/16"]

@@ -82,7 +82,7 @@ export function AnswerButtons({
   }
 
   return (
-    <div className="grid gap-2 w-full">
+    <div className={`w-full ${type === "TN" ? "grid grid-cols-2 gap-2.5" : "grid grid-cols-1 gap-2"}`}>
       {options.map((opt) => {
         const isThisChosen = chosenOption === opt.key
         const isThisCorrect = correctOption === opt.key
@@ -103,11 +103,11 @@ export function AnswerButtons({
           if (isThisCorrect) {
             containerClasses = "border border-success bg-success-soft text-foreground"
             badgeClasses = "border border-success/40 bg-success/20 text-foreground font-bold"
-            rightIcon = <Check className="w-4 h-4 text-success shrink-0 ml-auto" strokeWidth={2.5} />
+            rightIcon = <Check className="w-4 h-4 text-success shrink-0 ml-1 sm:ml-auto" strokeWidth={2.5} />
           } else if (isThisChosen && !isThisCorrect) {
             containerClasses = "border border-destructive bg-destructive-soft text-foreground"
             badgeClasses = "border border-destructive/40 bg-destructive/20 text-foreground font-bold"
-            rightIcon = <X className="w-4 h-4 text-destructive shrink-0 ml-auto" strokeWidth={2.5} />
+            rightIcon = <X className="w-4 h-4 text-destructive shrink-0 ml-1 sm:ml-auto" strokeWidth={2.5} />
           } else {
             // Unselected options restore full neutral styling (calm, full contrast, no /80 dimming)
             containerClasses = "border border-border bg-card text-foreground"
@@ -121,16 +121,20 @@ export function AnswerButtons({
             type="button"
             disabled={disabled || answered}
             onClick={() => handleOptionClick(opt.key)}
-            className={`group relative flex items-center justify-between text-left min-h-[64px] py-3.5 px-4 rounded-[12px] transition-colors duration-fast active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed select-none ${containerClasses}`}
+            className={`group relative flex items-center ${
+              type === "TN"
+                ? "justify-center min-h-[52px] sm:min-h-[64px] text-center font-bold text-base sm:text-lg"
+                : "justify-between min-h-[58px] sm:min-h-[64px] text-left"
+            } py-3 px-3 sm:px-4 rounded-[12px] transition-all duration-fast active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed select-none ${containerClasses}`}
           >
-            <div className="flex items-center gap-3.5 flex-1 pr-2">
-              {/* Kbd badge: 30x30 left, hidden on (pointer:coarse) */}
+            <div className={`flex items-center ${type === "TN" ? "justify-center gap-2" : "gap-3.5 flex-1 pr-2"}`}>
+              {/* Kbd badge: left, hidden on (pointer:coarse) */}
               <span
-                className={`hidden [@media(pointer:fine)]:inline-flex items-center justify-center w-[30px] h-[30px] rounded-[8px] text-xs font-mono font-bold shrink-0 transition-colors select-none tabular-nums ${badgeClasses}`}
+                className={`hidden [@media(pointer:fine)]:inline-flex items-center justify-center w-[28px] h-[28px] rounded-[7px] text-xs font-mono font-bold shrink-0 transition-colors select-none tabular-nums ${badgeClasses}`}
               >
                 {opt.key}
               </span>
-              <span className="text-type-body font-normal leading-snug text-foreground flex-1">
+              <span className={`${type === "TN" ? "font-bold tracking-wider" : "text-type-body font-normal leading-snug"} text-foreground`}>
                 {opt.label}
               </span>
             </div>

@@ -18,10 +18,19 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from app.main import app
-from app.auth import SESSIONS, SESSION_COOKIE_NAME, reset_rate_limits
-from app.db import init_db
+from app.auth import SESSION_COOKIE_NAME, reset_rate_limits
+from app.db import init_db, get_db_connection
 
 client = TestClient(app)
+
+
+def _token_exists_in_db(token: str) -> bool:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM user_sessions WHERE token = ?", (token,))
+    count = cursor.fetchone()[0]
+    conn.close()
+    return count > 0
 
 
 @pytest.fixture(autouse=True)
@@ -89,7 +98,7 @@ def test_anti_enumeration_identical_error():
 
 
 def test_session_cookie_attributes_and_rotation():
-    """Verify session cookie attributes and session ID rotation on subsequent login."""
+    """Verify session cookie attributes and session ID rotation on subsequent login with persistent SQLite storage."""
     login_name = f"user_rot_{uuid.uuid4().hex[:6]}"
     password = "TestPassword123"
 
@@ -98,7 +107,7 @@ def test_session_cookie_attributes_and_rotation():
     assert reg_res.status_code == 200
     first_cookie = reg_res.cookies.get(SESSION_COOKIE_NAME)
     assert first_cookie is not None
-    assert first_cookie in SESSIONS
+    assert _token_exists_in_db(first_cookie)
 
     # Check Set-Cookie headers
     set_cookie_hdr = reg_res.headers.get("set-cookie", "")
@@ -108,7 +117,7 @@ def test_session_cookie_attributes_and_rotation():
 
     reset_rate_limits()
 
-    # Login with existing session in cookie -> should rotate session ID
+    # Login with existing session in cookie -> should rotate session ID in SQLite
     client.cookies.set(SESSION_COOKIE_NAME, first_cookie)
     login_res = client.post("/auth/login", json={"login": login_name, "password": password})
     assert login_res.status_code == 200
@@ -116,5 +125,5 @@ def test_session_cookie_attributes_and_rotation():
     new_cookie = login_res.cookies.get(SESSION_COOKIE_NAME)
     assert new_cookie is not None
     assert new_cookie != first_cookie, "Session token was not rotated upon login"
-    assert first_cookie not in SESSIONS, "Old session token was not invalidated"
-    assert new_cookie in SESSIONS, "New session token is not registered in active sessions"
+    assert not _token_exists_in_db(first_cookie), "Old session token was not invalidated in DB"
+    assert _token_exists_in_db(new_cookie), "New session token is not registered in user_sessions table"

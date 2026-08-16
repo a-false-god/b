@@ -3,7 +3,7 @@ services:
     build: .
     container_name: prawko-b
     ports:
-      - "127.0.0.1:8000:8000"
+      - "8000:8000"
     volumes:
       # Baza SQLite (data/prawko.sqlite) — trwałość poza kontenerem
       - ./data:/app/data
@@ -14,12 +14,18 @@ services:
       - TZ=Europe/Warsaw
     env_file:
       - .env
+    mem_limit: 512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     restart: unless-stopped
 
   caddy:
     image: caddy:2-alpine
     container_name: prawko-caddy
     network_mode: host
+    mem_limit: 64m
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data

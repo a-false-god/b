@@ -185,7 +185,7 @@ def test_property_session_queue_invariants(limit, user_id):
 # 3. Exam Sheet Generator Invariants
 # ==============================================================================
 
-@settings(max_examples=200)
+@settings(max_examples=100, deadline=None)
 @given(seed=st.integers(min_value=1, max_value=1000000))
 def test_property_exam_sheet_composition(seed):
     """

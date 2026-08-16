@@ -1,0 +1,24 @@
+{
+  "name": "Prawko B — Nauka Egzaminu",
+  "short_name": "Prawko B",
+  "description": "Aplikacja do nauki państwowego egzaminu teoretycznego na prawo jazdy kat. B",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d0d10",
+  "theme_color": "#0d0d10",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
